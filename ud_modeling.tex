@@ -33,6 +33,7 @@
 
 \newcommand{\bb}{\ensuremath{\boldsymbol{\beta}}}
 \newcommand{\bg}{\ensuremath{\boldsymbol{\gamma}}}
+\newcommand{\bG}{\ensuremath{\boldsymbol{\Gamma}}}
 \newcommand{\ba}{\ensuremath{\boldsymbol{\alpha}}}
 \newcommand{\be}{\ensuremath{\boldsymbol{\epsilon}}}
 \newcommand{\bSig}{\ensuremath{\boldsymbol{\Sigma}}}
@@ -116,14 +117,14 @@ Literature on UDs is generally divided into two types. The first type is what we
 
 In order to counter start bias effects researchers can fit resource selection function (RSF) models \citep{Manly:2002ay} to telemetry data to investigate what space characteristics an animal might prefer relative to other habitat within its range. A map of space preference based on resource selection is used as a UD approximation than is not subject to start bias because it makes use of spatial habitat characteristics than can be assessed at locations away from where the animal was located during tag deployment. However, \cite{Barnett:2008wj} described some general results concerting the weighted distribution form \cite{Johnson:2008kx, Johnson:2013fk} of a resource selection movement model in discrete time. Assuming a symmetric movement kernel, they show that the limiting distribution is proportional to the resource selection function or the square of the resource selection function depending on how large the movement kernel is relative to the spatial variation of the resource selection function. Although, not explicitly examined, step-selection function (SSF; \citealt{FortinEtAl2005a, avgar2016integrated}) models use this same movement kernel form. So, we conjecture similar results might hold for those types of analyses as well. Therefore, while qualitatively similar, RSFs and UDs can be quite different depending on the scale of movement.   
 
-Predictive UDs seek to blend the habitat associations benefits of RSF analysis with movement models such that the resulting UD functions, which appear similar to RSFs, represent the actual UD. Predictive UDs are heuristically what a kernel estimate would look like if the animal was allowed to move through its habitat for a very long (infinite) time. In essence a movement model is fitted to the telemetry data and the location of the animal is predicted from the movement model for a time far in the future. If it exists, this is the stationary or limiting distribution of the movement process. These limiting distributions are independent of the starting location, thus, removing the start bias \citep{whitehead2013inferring, wilsonestimating}. \cite{moorcroft1999home} present an early example of a predictive UD approach modeling home rage of coyotes ({\it Canis latrans}) witha movement model which included a response to scent marks. \cite{wilsonestimating} extended their work to continuous-time Markov chains that included habitat based movement. Although, the CTMC predicted UD was derived numerically from the fitted model components, so, there was no direct parameter association that could be used to relate habitat variables with the UD surface. \cite{michelot2018langevin} used continuous-time and space Langevin diffusions to model resource selection and movement. From this model it is possible to calculate an analytic UD with the exponential form that is used for RSFs, 
+Predictive UDs seek to blend the habitat association benefits of RSF analysis with movement models such that the resulting UD functions, which appear similar to RSFs, represent the actual UD. Predictive UDs are heuristically what a kernel estimate would look like if the animal was allowed to move through its habitat for a very long (infinite) time. In essence a movement model is fitted to the telemetry data and the location of the animal is predicted from the movement model for a time far in the future. If it exists, this is the stationary or limiting distribution of the movement process. These limiting distributions are independent of the starting location, thus, removing the start bias \citep{whitehead2013inferring, wilsonestimating}. \cite{moorcroft1999home} present an early example of a predictive UD approach modeling home rage of coyotes ({\it Canis latrans}) witha movement model which included a response to scent marks. \cite{wilsonestimating} extended their work to continuous-time Markov chains that included habitat based movement. Although, the CTMC predicted UD was derived numerically from the fitted model components, so, there was no direct parameter association that could be used to relate habitat variables with the UD surface. \cite{michelot2018langevin} used continuous-time and space Langevin diffusions to model resource selection and movement. From this model it is possible to calculate an analytic UD with the exponential form that is used for RSFs, 
 \begin{equation}
 \label{eq:exp.form}
 \bu(\bs) \propto \exp\{\bx(\bs)'\bb\},
 \end{equation} 
 where $\bu(\bs)$ is the UD at location $\bs$ and $\bx(\bs)$ are habitat covariates at location $\bs$. This model produces the  type of analytic UD prediction that directly relates the UD to habitat variables through the coefficients $\bb$. However. There are some drawbacks for this approach. First the likelihood for this model is not available in closed form, so a discrete time approximation must be use. Second, this model is only applicable to continuously valued covariates because the habitat gradient surfaces, $\nabla \bx(\bs)$, are used in the movement model \citep{michelot2018langevin}. Finally, the Langevin diffusion limiting distribution in (\ref{eq:exp.form}) is only valid when the diffusion component is constant. That is the animal does not change its overall rate movement in different habitats; only the advection component is altered by habitat (See Section 3). 
 
-Herein we consider a general special case of the CTMC model used by \cite{wilsonestimating} for which we can obtain closed form predictions of the UD from the fitted model. The CTMC model has several advantages over the Langevin UD. First, there is no approximation necessary to calculate the likelihood for optimization. Second, continuous or discrete habitat covariates can be used for movement modeling and UD prediction. Finally, overall movement rate can be influenced by habitat, that is diffusion rate can be altered by habitat, not just advection. Moreover, because there is no approximation for the likelihood that error does not propagate to the UD prediction, so it is exact. To fit these model, we also developed the {\tt R} package {\tt walk}\footnote{Available from: \url{https://dsjohnson.r-universe.dev/walk}} that can fit general CTMC models including the more general forms requiring numerical calculation of the UD. 
+Herein we consider a general class of CTMC models for which we can obtain closed form predictions of the UD from the fitted model parameters. The CTMC model has several advantages over the Langevin derived UD. First, there is no approximation necessary to calculate the likelihood for optimization. Second, continuous or discrete habitat covariates can be used for movement modeling and UD prediction. Finally, overall movement rate can be influenced by habitat, that is, diffusion rate can be altered by habitat, not just advection. Moreover, because there is no approximation for the likelihood that error does not propagate to the UD prediction, so it is exact. To fit these model, we also developed the {\tt R} package {\tt walk}\footnote{Available from: \url{https://dsjohnson.r-universe.dev/walk}} that can fit general CTMC models including the more general forms requiring numerical calculation of the UD. 
 
 
 %There is one drawback to the CTMC model if form (\ref{eq:exp.form}) is desired. That is one cannot use gradient surface covariates such as the ocean current or surface wind vector fields that \cite{Johnson353516} used to model fur seal ({\it Callorhinus ursinus}) migration with a CTMC model. This is not a shortcoming of CTMC models, it just cannot be proven that it has exponential form, but the numerical methods. So, in addition to exact UD modeling we will also consider approximations to  Langevin diffusions using CTMCs and a discrete space approximation as opposed to the discrete time approximation of \citep{michelot2018langevin}. To fit these model, we also developed the {\tt R} package {\tt walk}\footnote{Available from: \url{https://dsjohnson.r-universe.dev/walk}} that can fit general CTMC models including the more general forms requiring numerical calculation of the UD. 
@@ -155,9 +156,9 @@ Herein we consider a general special case of the CTMC model used by \cite{wilson
 
 \section{Continuous-Time Markov Movement Models}
 
-Here we provide a brief description of continuous-time Markov chain (CTMC) models. More detail can be found in \citet{norris1998markov}, \cite{Johnson353516}, or \cite{Hanks:2015aa}. In a CTMC movement model the geographical study domain is partitioned into a cells indexed by $\fC = \{1,\dots,n\}$. Each cell, $i$, has a set of neighboring cells $\fC_i = \{j\in \fC: i \sim j\}$, where $i\sim j$ means that an animal can go from cell $i$ to cell $j$ in one move. For example, neighboring cells might share a border in a raster partition. Here we assume that if $i\sim j$, then $j\sim i$, that is, movement is symmetric between cells. As with all CTMCs, the complete path of the animal, $P$, can be decomposed into the {\it jump times} at which cell transitions are made, $\btau = \{\tau_0,\tau_1,\dots,\tau_M, \tau_{M+1}\}$, and the {\it embedded Markov chain}, which is the sequence of discrete-space cells visited, $\fG = \{g_0,\dots,g_M\}$. Thus, the CTMC path has the bivariate discrete-time representation $P=\{(\tau_m, g_m):m=0,\dots,M\}$, where $\tau_0 = 0$, $\tau_{M} = T$ is the known end of the telemetry deployment, and $g_0$ is the starting cell. In a slight abuse of notation, we also use $g_t$ and $\fC_t$ (i.e., indexed by continuous time, $t$) to represent the location and neighborhood of the animal for any time in $[0,T]$, that is, $g_t = g_m$ and $\fC_t = \fC_{g_m}$ for $t \in [\tau_m, \tau_{m+1})$. It is apparent which context is being used in a particular situation.
+Here we provide a brief description of continuous-time Markov chain (CTMC) models. More detail can be found in \citet{norris1998markov}, \cite{Johnson353516}, or \cite{Hanks:2015aa}. In a CTMC movement model the geographical study domain is partitioned into a cells or other discrete locations indexed by $\fC = \{1,\dots,n\}$. Each cell, $i$, has a set of neighboring cells $\fN_i = \{j\in \fC: i \sim j\}$, where $i\sim j$ means that an animal can go from cell $i$ to cell $j$ in one move. For example, in a raster partition, neighboring cells might share a border (rook neighborhood) or a corner point(queen neighborhood). Here we assume that if $i\sim j$, then $j\sim i$, that is, movement is symmetric between cells. As with all CTMCs, the complete path of the animal, $P$, can be decomposed into the {\it jump times} at which cell transitions are made, $\btau = \{\tau_0,\tau_1,\dots,\tau_M, \tau_{M+1}\}$, and the {\it embedded Markov chain}, which is the sequence of discrete-space cells visited, $\fG = \{g_0,\dots,g_M\}$. Thus, the CTMC path has the bivariate discrete-time representation $P=\{(\tau_m, g_m):m=0,\dots,M\}$, where $\tau_0 = 0$ and $\tau_{M+1} = T$ is the known end of the telemetry deployment. In a slight abuse of notation, we also use $g_t$ and $\fN_t$ (i.e., indexed by continuous time, $t\in [0,T]$) to represent the location and neighborhood of the animal for any time, that is, $g_t = g_m$ and $\fN_t = \fN_{g_m}$ for $t \in [\tau_m, \tau_{m+1})$. It is apparent which context is being used in a particular situation.
 
-The CTMC model is based on the conditional movement rates between cells,
+CTMC models are defined by the conditional movement rates between cells,
 \begin{equation}
 \lambda_{ij} = \lim_{h \to 0} [g_{t+h}=j|g_t = i]/h,
 \end{equation}
@@ -165,19 +166,23 @@ where $[g_{t+h}=j|g_t=i]$ is the probability that $g_{t+h} = j$ given the animal
 We use the notation `$[A|B]$' to represent the probability density (distribution) function of $A$ given $B$. The total rate of movement away from cell $i$ is 
 \begin{equation}
 \label{eq:total.haz}
-\Lambda_i = \sum_{j\in\fC_i} \lambda_{ij}.
+\Lambda_i = \sum_{j\in\fN_i} \lambda_{ij}.
 \end{equation}
-One other useful property of CTMCs is that the residence time in a cell, $r_m = \tau_{m+1}-\tau_{m}$, is conditionally distributed,
+One other useful property of CTMCs is that the residence time in a cell, $r_m = \tau_{m+1}-\tau_{m}$, is distributed,
 \[
 [r_m|g_m=i] = \text{Exponential}(r_m|\Lambda_i).
 \]
-Thus the expected residence time in cell $i$ is $\Lambda_i^{-1}$. 
-
-If we put all the rates in the $n \times n$ matrix $\bQ$ with $(-\Lambda_1,\dots,-\Lambda_n)$ on the diagonal and $\lambda_{ij}$ in the $i$th row, $j$th column. Then the conditional distribution is evaluated with 
+Thus the expected residence time in cell $i$ is $\Lambda_i^{-1}$. If we put all the rates in the $n \times n$ matrix $\bQ$ with $(-\Lambda_1,\dots,-\Lambda_n)$ on the diagonal and $\lambda_{ij}$ in the $i$th row, $j$th column.
+Then the transition matrix from $g_0 \in \fC$ to $g_t\in\fC$ is,
 \[
-\bu_i(h) = [g_{t+h} | g_t=i] = \mathbf{1}_i' \text{expm}\left(\bQ h\right),
+\bG(t) = \text{exp}\left(\bQ t\right),
 \] 
-where $\mathbf{1}_i$ is a vector of zeros with a 1 in the $i$th position and ``expm'' is the matrix exponential function. If a limiting distribution exists, as $h \to \infty$, $\bu_i(h) \to \bu$ regardless of what cell the animal is in currently. The conditions under which a CTMC will have a long-run limiting distribution over the study area are outlined by \cite{wilsonestimating}. These conditions are
+where ``exp" is the matrix exponential function. The conditional distribution of $[g_t|g_0=i] = \bg_i(t)$ is the $i$th row of $\bG(t)$. The movement process can also de thought of as the solution to 
+
+ Then the movement process can be described as the discrete space diffusion process,
+
+
+If a limiting distribution exists, as $t \to \infty$, $\bg_i(t) \to \bu$ regardless of what cell the animal is in currently. The conditions under which a CTMC will have a long-run limiting distribution over the study area are outlined by \cite{wilsonestimating}. These conditions are
 \begin{enumerate}
 \item {\it Homogeneity}.-- The movement rate function remains constant through time. 
 \item {\it Irreducibility}.-- Any cell can be reached from any other cell given sufficient time. In practice, that the study are is not separated into multiple areas by impenetrable barriers.
@@ -212,7 +217,7 @@ where
 \begin{itemize}
 \item $\beta_0$ is a base rate of movement,
 \item $a_i$ controls residency time when the animal is in cell $i$
-\item $b_j$ controls movement to cell $j$ from any cell in $\fC_j$, and
+\item $b_j$ controls movement to cell $j$ from any cell in $\fN_j$, and
 \item $c_{ij}$ controls movement specifically from cell $i$ to cell $j$.
 \end{itemize}
 Of course, each of the terms can be functions of spatial covariates. If the neighbor-specific terms are symmetric, that is, $c_{ij} = c_{ji}$, then we use the embedded chain result (\ref{eq:embed.u}) and MCMC theory to show (Appendix A) the limiting distribution is,
@@ -248,7 +253,7 @@ u_i \propto  \exp(b_i - a_i+2d_i),
 %\]
 %To fit this model to collected telemetry data \citep{michelot2018langevin} use a time discretization approximation along with and stochastic imputation process \citep{xxx} to account for gaps in the location record , as well as, location uncertainty. 
 %
-%As an alternative to time discretization, we can use a continuous-time, discrete-space approximation. This is accomplished by approximating the SDE process $\bs_t$ with a CTMC process, $\by_t$. The state-space for $\by_t$ is a uniform grid of locations $\fC = \{\tilde{\bs}_1,\dots,\tilde{\bs}_n\}$ in the study area where $||\tilde{\bs}_i-\tilde{\bs}_j|| = h$ for any neighboring locations. Either a raster or hex grid will work. A general result for this type of approximation is that as $h \to 0$, $\by_t$ is asymptotically equivalent to $\bs_t$ if the following conditions hold for elements of the CTMC rate transition matrix
+%As an alternative to time discretization, we can use a continuous-time, discrete-space approximation. This is accomplished by approximating the SDE process $\bs_t$ with a CTMC process, $\by_t$. The state-space for $\by_t$ is a uniform grid of locations $\fN = \{\tilde{\bs}_1,\dots,\tilde{\bs}_n\}$ in the study area where $||\tilde{\bs}_i-\tilde{\bs}_j|| = h$ for any neighboring locations. Either a raster or hex grid will work. A general result for this type of approximation is that as $h \to 0$, $\by_t$ is asymptotically equivalent to $\bs_t$ if the following conditions hold for elements of the CTMC rate transition matrix
 %\begin{enumerate}
 %\item $\sum_{j\ne i} \lambda_{ij} h \be_{ij} = \bmu_i + o(h)$
 %\item $\sum_{j\ne i} \lambda_{ij} h^2 \be_{ij}\be_{ij}' = \sigma^2\mathbf{I} + o(h)$,
@@ -284,6 +289,8 @@ In this section, we will apply the modeling approach described herein to a telem
 
 False killer whale satellite tag deployment methods have been described in detail elsewhere (see \citealt{baird2010movements, baird2012range}) so they are only briefly summarized here. Individuals were tagged with Argos transmitting SPOT5/SPOT6 ($n=28$) and SPLASH10 ($n=1$) tags during dedicated small boat survey efforts throughout the main Hawaiian Islands from 2007 through 2020 (\citealt{baird2012range,baird2021bringing, baird2016lives}; see \citealt{baird2013odontocete} for details on surveys). Deployment duration ranged from 2.1 days to 2014 days (median=43 days). Argos location data were processed through the Douglas-Argos Filter (accessed via Movebank; \citealt{kranstauber2011movebank,douglas2012moderating}) to remove erroneous locations based on unrealistic travel speeds and turning angles. Where dyads of tagged false killer whales exhibited correlated movements, the individual with the longest track duration was retained for analyses and the other excluded to avoid pseudoreplication following \citet{baird2012range}. This dataset includes five individuals that were satellite tagged twice during the study period; trajectories during each deployment were non-similar and thus considered independent. The final analytical dataset consisted of 24 trajectories and 11,795 filtered Argos locations. 
 
+meta analysis: \cite{johnson2022greater} with {\tt mixmeta} package \cite{sera2019extended}
+
 \section{Discussion}
 
 
@@ -316,7 +323,7 @@ Figures.
 
 \appendix 
 
-\section{Proof of CTMC limiting distribution}
+\section{Proof of closed form CTMC limiting distribution}
 
 Using the Metropolis-Hastings (MH) algorithm we can show, by construction, that a Markov chain has a desired limiting distribution. The MH algorithm is designed to sample from a distribution $c^{-1}\alpha(x)$ when the proportionality constant is unknown. It accomplishes this feet by constructing a Markov process $q(X_t|X_{t-1})$ to move from state $X_{t-1}$ to $X_t$ such that, asymptotically, $X_t \sim c^{-1}\alpha(x)$ as $t\to \infty$. Full details of the MH algorithm can be found in \cite{chib1995understanding}, but the basic version proceeds as follows for desired limiting distribution, $c^{-1}\alpha(x)$, \bigskip
 \hrule
@@ -340,14 +347,14 @@ The embedded Markov chain, $\fG$, $g_0,g_1\dots,g_m,\dots$, for the CTMC movemen
 \[
 q(g_m=j|g_{m-1}=i) = \lambda_{ij}/ \Lambda_i \text{ for } i \sim j,
 \]
-where $\Lambda_i = \sum_{j\in\fC_i}\lambda_{ij}$. All we need to do is construct an appropriate $\alpha_i$, $i=1,\dots n$, which is only a function of cell $i$ and no other cell $j$, such that
+where $\Lambda_i = \sum_{j\in\fN_i}\lambda_{ij}$. All we need to do is construct an appropriate $\alpha_i$, $i=1,\dots n$, which is only a function of cell $i$ and no other cell $j$, such that
 \[
-R_m = \frac{\alpha_j\lambda_{ji}\Lambda_i}{\alpha_i\lambda_{ij}\Lambda_j} = 1 
+R_m = \frac{\alpha_j\lambda_{ji}\Lambda_i}{\alpha_i\lambda_{ij}\Lambda_j} \ge 1 
 \]
 for all $m>0$ and all $(i,j)$ such that $i$ and $j$ are neighbors. Then, $\ba$ will be the limiting distribution of the embedded chain and we can use the result that the limiting distribution of the full CTMC is $u_i \propto \alpha_i/\Lambda_i$.
 
 We begin be evaluating the MH acceptance ratio for our CTMC model. After canceling like terms in the faction and rearranging advantageously, we obtain,
-\begin{equation}
+\begin{equation}\label{eq:acc.ratio}
 \begin{aligned}
 R_m &= \frac{\exp\{a_j + b_i\}\Lambda_i}{\alpha_i} \times \frac{\alpha_j}{\exp\{a_i + b_j\}\Lambda_j} \times \frac{\exp\{c_{ji}\}}{\exp\{c_{ij}\}} \\
 &= \frac{\exp\{b_i-a_i\}\Lambda_i}{\alpha_i} \times \frac{\alpha_j}{\exp\{b_j-a_j\}\Lambda_j} \times \exp\{c_{ji}-c_{ij}\}\end{aligned}
@@ -355,20 +362,20 @@ R_m &= \frac{\exp\{a_j + b_i\}\Lambda_i}{\alpha_i} \times \frac{\alpha_j}{\exp\{
 From this MH acceptance ratio, one can see that a set of sufficient conditions that satisfy $R_m \ge 1$ for all $m = 1,2,\dots$ and all $(i,j)$ such that $i\sim j$ is 
 \begin{enumerate}
 \item $\alpha_i \propto \exp\{b_i-a_i\}\Lambda_i$
-\item $c_{ij} = c_{ji}$
+\item \begin{enumerate}
+ \item $c_{ij} = c_{ji}$ or 
+ \item $c_{ij} = d_j - d_i$
+ \end{enumerate}
 \end{enumerate}
-Thus using the CTMC limiting distribution result, the UD of the CTMC defined by $\lambda_{ij}$ is $u_i \propto \exp\{b_i-a_i\}$. There is another specific condition on $c_{ij}$ that also provides a similar result. If $c_{ij}$ is constructed as a difference between cell indexed terms, e.g., $c_{ij} = d_j - d_i$ where movement effects are modeled with relative local differences in cell effects, we can still evaluate the UD in the closed exponential form. We just need to evaluate the $R_m$ ratio,
-\begin{equation}
-\begin{aligned}
-R_m &= \frac{\exp\{b_i-a_i\}\Lambda_i}{\alpha_i} \times \frac{\alpha_j}{\exp\{b_j-a_j\}\Lambda_j} \times \exp\{2d_i-2d_j\} \\
-&= \frac{\exp\{b_i-a_i+2d_i\}\Lambda_i}{\alpha_i} \times \frac{\alpha_j}{\exp\{b_j-a_j+2d_j\}\Lambda_j}.
-\end{aligned}
-\end{equation}
-Thus, for all local difference effects, we amplify the effect on the limiting distribution by 2, that is, 
-\begin{equation}
+If condition 2a. holds then the cell-pair specific movements are symmetric and 
+\[
+u_i \propto \exp\{b_i-a_i\}
+\]
+If condition 2b. holds, that is $c_{ij}$ is constructed as a difference between cell indexed terms, and cell-pair specific movement effects are modeled with relative local differences in cell effects, we can still evaluate the UD in the closed exponential form. The term on the right-hand side of (\ref{eq:acc.ratio}) becomes $\exp\{2d_i-2d_j\}$ and can be distributed to the numerator and denominator to produce 
+\[
 \alpha_i \propto \exp\{b_i-a_i+2d_i\}\Lambda_i
-\end{equation}
-satisfies the $R_m\ge 1$ condition and is the limiting distribution. 
+\]
+which satisfies the $R_m\ge 1$ condition and is the limiting distribution. 
 
 %\section{SDE approximation results}
 %
