@@ -5,8 +5,15 @@
 \usepackage{authblk}
 \usepackage{xcolor}
 \usepackage{setspace}
+\usepackage{mathtools}
 
 \geometry{verbose,letterpaper,tmargin=2.54cm,bmargin=2.54cm,lmargin=2.54cm,rmargin=2.54cm}
+
+\usepackage{caption}
+\captionsetup{
+  justification = raggedright,
+  singlelinecheck = false
+}
 
 %%%%
 % Some shortcut notation
@@ -30,6 +37,9 @@
 \newcommand{\bQ}{\ensuremath{\mathbf{Q}}}
 \newcommand{\bu}{\ensuremath{\mathbf{u}}}
 \newcommand{\bs}{\ensuremath{\mathbf{s}}}
+\newcommand{\bp}{\ensuremath{\mathbf{p}}}
+\newcommand{\bP}{\ensuremath{\mathbf{P}}}
+\newcommand{\bV}{\ensuremath{\mathbf{V}}}
 
 \newcommand{\bb}{\ensuremath{\boldsymbol{\beta}}}
 \newcommand{\bg}{\ensuremath{\boldsymbol{\gamma}}}
@@ -72,7 +82,7 @@
 %\begin{center}
 \setlength{\parindent}{0pt}
 
-{\Large \bf Modeling Animal Space-Use with Continuous-Time Markov Chains}
+{\Large \bf Predicting Animal Space-Use with Continuous-Time Markov Chains}
 
 \bigskip\bigskip\bigskip
 
@@ -103,31 +113,50 @@ $^3$Marine Mammal Institute, Department of Fisheries, Wildlife, and Conservation
 \linenumbers
 
 
-\noindent {\bf Abstract.}This happens last. \bigskip
+\noindent {\bf Abstract.}
+I. Background and Problem StatementContext: Remote animal telemetry data is widely used in ecology to assess animal space-use and evaluate utilization distributions (UDs).  
 
-\noindent {\bf Key words}: Some, Key, words, Go, Here
+The Problem (Start Bias): Traditional empirical UDs (like kernel density or Brownian bridge estimators) can suffer from "start bias" if tag deployments are too short for an animal to fully explore its habitat, heavily biasing results toward the initial release location.  
+
+Existing Solutions \& Limitations: Predictive UDs attempt to mitigate this by finding the long-run stationary distribution of a movement model. However, previous methods (like Langevin diffusions) require discrete-time approximations, are restricted to continuous covariates, and assume constant diffusion rates across habitats.  
+
+II. Proposed MethodThe Innovation: Introduction of a general class of Continuous-Time Markov Chain (CTMC) models that provide exact, closed-form predictions of the UD directly from fitted parameters.  
+
+Key Advantages: * Eliminates the need for likelihood approximations during optimization.  Accommodates both continuous and discrete habitat covariates.  Allows habitat factors to influence diffusion rates, not just advection rates.  Software Availability: The authors developed the R package walk to fit these general CTMC models.  
+
+III. Application and Case StudyStudy System: The framework was applied to a telemetry dataset tracking five individuals from different social clusters of endangered false killer whales (Pseudorca crassidens) in the Hawaiian Islands.  
+
+Modeling Approach: A two-stage divide-and-conquer meta-analytic approach was used to approximate a full Bayesian hierarchical model, sharing information between individuals to improve population-level inference.  
+
+Covariates Considered: Movement was modeled relative to depth residuals, distance from land, sea surface temperature (SST), and sea level anomaly (SLA).  
+
+IV. Results and Main ConclusionsEcological Findings: Whales exhibited preferences for shallower waters close to the main Hawaiian Islands and warmer SST conditions. Population-level coefficients generally shrank individual variations toward a common mean, except for notable variations in depth and SLA preferences.  
+
+Methodological Validation: To verify that the model's rate truncation did not adversely affect the results, the closed-form exact truncated UDs were compared to fully numerical Eigen-decomposition methods. Bhattacharyya’s Affinity (BA) values ranged from 0.996 to 1, demonstrating that the distributions were virtually identical and validating the accuracy of the closed-form approach.
+
+ \bigskip
+
+\noindent {\bf Key words}: CTMC, Hidden Markov model, Limiting distribution, Satellite telemetry, Space-use, Utilization distribution
 
 % \clearpage
 
 \section{Introduction}
 
-Any quick literature search will reveal that remote collection and analysis of animal locations, or telemetry data, have become a ubiquitous and important tool in the advancement of animal ecology. A perennial subject within animal telemetry analysis is the assessment of space-use. That is what aspects of habitat and movement control where an animal might occur on the landscape. The topic of animal space-use is often used in conjunction with the terms home range, resource selection, or utilization distribution. Here we are specifically concerned with the concept of utilization distributions (UD) as defined by \cite{powell2012home}, a probability distribution that describes an animal's location at any random time. 
+Any quick literature search will reveal that remote collection and analysis of animal locations, or telemetry data, have become a ubiquitous and important tool in the advancement of animal ecology. A perennial subject within animal telemetry analysis is the assessment of space-use. That is what aspects of habitat and movement control where an individual generally occurs on the landscape. The topic of animal space-use is often used in conjunction with the terms home range, resource selection, or utilization distribution. Here we are specifically concerned with the concept of utilization distributions (UD) as defined by \cite{powell2012home}, a spatial probability distribution that describes an animal's location at any random time. More specifically, what habitat characteristics influence that distribution. 
 
-Literature on UDs is generally divided into two types. The first type is what we term {\it empirical} UDs. Empirical UDs are constructed based on a summary of observed locations, for example, the traditional kernel density (see \citealt{Keating:2009hl}) or Brownian bridge estimators \citep{Horne:2007mw} of UDs are empirical in that they place positive mass over observed locations. If an animal does not visit a particular area there will be very little if any use estimated for that area depending on how close it is to any observed locations. However, absence of observed use may be a symptom of {\it start bias} \citep{whitehead2013inferring}. Start bias results from tag deployments that are not long enough for the animal to fully explore the space and habitat available to it over the course of study. Therefore, spatial use assessments based solely on the observed locations can be biased towards the release location of the animal. This is especially true in recent years where many locations can be obtained over a fine time-scale and thus produce highly autocorrelated locations. To match the increased technological sophistication of location devices, statistical methodology of empirical UD methods have increased to account for the high autocorrelation (e.g., \citealt{fleming2015rigorous, calabrese2016ctmm}). However, the most basic solution for reducing start bias is to increase data collection (i.e., tag deployment) interval length  \citep{Fieberg:2010fk}. This basic solution motivates the next type of UD, the {\it predictive} UDs.
+Literature on UDs is generally divided into two types. The first type is what we term {\it empirical} UDs. Empirical UDs are constructed based on a summary of observed locations, for example, the traditional kernel density \citep{Keating:2009hl} or Brownian bridge estimators \citep{Horne:2007mw}. These are empirical because they place positive mass over observed locations. If an animal does not visit a particular area there will be very little if any use estimated for that area depending on how close it is to observed locations. However, absence of observed use may be a symptom of {\it start bias} \citep{whitehead2013inferring}. Start bias results from tag deployments that are not long enough for the animal to fully explore the space and habitat available to it over the course of study. Therefore, spatial use assessments based solely on the observed locations can be biased towards the release location of the animal. This is especially true in recent years where many locations can be obtained over a fine time-scale and thus produce highly autocorrelated paths. To match the increased technological sophistication of location devices, statistical methodology of empirical UD methods have increased to account for the high autocorrelation (e.g., \citealt{fleming2015rigorous, calabrese2016ctmm}). However, the most basic solution for reducing start bias is to increase data collection (i.e., tag deployment) interval length  \citep{Fieberg:2010fk}. This is easy to prescribe by analysts, but in practice may be difficult to ensure telemetry devices stay active long enough and may be out off the researchers control entirely. This aspect motivates the development of {\it predictive} UDs.
 
-In order to counter start bias effects researchers can fit resource selection function (RSF) models \citep{Manly:2002ay} to telemetry data to investigate what space characteristics an animal might prefer relative to other habitat within its range. A map of space preference based on resource selection is used as a UD approximation than is not subject to start bias because it makes use of spatial habitat characteristics than can be assessed at locations away from where the animal was located during tag deployment. However, \cite{Barnett:2008wj} described some general results concerting the weighted distribution form \cite{Johnson:2008kx, Johnson:2013fk} of a resource selection movement model in discrete time. Assuming a symmetric movement kernel, they show that the limiting distribution is proportional to the resource selection function or the square of the resource selection function depending on how large the movement kernel is relative to the spatial variation of the resource selection function. Although, not explicitly examined, step-selection function (SSF; \citealt{FortinEtAl2005a, avgar2016integrated}) models use this same movement kernel form. So, we conjecture similar results might hold for those types of analyses as well. Therefore, while qualitatively similar, RSFs and UDs can be quite different depending on the scale of movement.   
+In order to counter start bias effects researchers can fit resource selection function (RSF) models \citep{Manly:2002ay} to telemetry data to investigate what space characteristics an animal might prefer relative to available habitat. A map of space preference based on resource selection is used as a UD approximation than is not subject to start bias because it makes use of spatial habitat characteristics than can be assessed at locations away from where the animal was located during tag deployment. However, \cite{Barnett:2008wj} describe some general results concerting the weighted distribution form \cite{Johnson:2008kx, Johnson:2013fk} of a resource selection movement model in discrete time. Assuming a symmetric movement kernel, they show that the limiting distribution is proportional to the resource selection function or the square of the resource selection function depending on how large the movement kernel is relative to the spatial variation of the habitat. Although, not explicitly examined, step-selection function (SSF; \citealt{FortinEtAl2005a, avgar2016integrated}) models use this same movement kernel form. So, we conjecture similar results might hold for those types of analyses as well. Therefore, while qualitatively similar, RSFs and UDs can be quite different depending on the scale of movement.   
 
-Predictive UDs seek to blend the habitat association benefits of RSF analysis with movement models such that the resulting UD functions, which appear similar to RSFs, represent the actual UD. Predictive UDs are heuristically what a kernel estimate would look like if the animal was allowed to move through its habitat for a very long (infinite) time. In essence a movement model is fitted to the telemetry data and the location of the animal is predicted from the movement model for a time far in the future. If it exists, this is the stationary or limiting distribution of the movement process. These limiting distributions are independent of the starting location, thus, removing the start bias \citep{whitehead2013inferring, wilsonestimating}. \cite{moorcroft1999home} present an early example of a predictive UD approach modeling home rage of coyotes ({\it Canis latrans}) witha movement model which included a response to scent marks. \cite{wilsonestimating} extended their work to continuous-time Markov chains that included habitat based movement. Although, the CTMC predicted UD was derived numerically from the fitted model components, so, there was no direct parameter association that could be used to relate habitat variables with the UD surface. \cite{michelot2018langevin} used continuous-time and space Langevin diffusions to model resource selection and movement. From this model it is possible to calculate an analytic UD with the exponential form that is used for RSFs, 
+Predictive UDs seek to blend the habitat association benefits of RSF analysis with movement models such that the resulting UD functions, which appear similar to RSFs, represent the actual UD. Predictive UDs are heuristically what a kernel estimate would look like if the animal was allowed to move through its habitat for a very long (infinite) time. In essence a movement model is fitted to the telemetry data and the location of the animal is predicted from the movement model for a time far in the future. If it exists, this is the stationary or limiting distribution of the movement process. These limiting distributions are independent of the starting location, thus, removing the start bias \citep{whitehead2013inferring, wilsonestimating}. \cite{moorcroft1999home} present an early example of a predictive UD approach modeling home rage of coyotes ({\it Canis latrans}) witha movement model which included a response to scent marks. \cite{wilsonestimating} extended their work to continuous-time Markov chains (CTMC) that included habitat based movement. Although, the CTMC predicted UD was derived numerically from the fitted model components, there was no direct parameter association that could be used to relate habitat variables with the UD surface. \cite{michelot2018langevin} used continuous-time and space Langevin diffusions to model resource selection and movement. From this model it is possible to calculate an closed-form predictive UD with the RSF exponential form, that is, 
 \begin{equation}
 \label{eq:exp.form}
 \bu(\bs) \propto \exp\{\bx(\bs)'\bb\},
 \end{equation} 
-where $\bu(\bs)$ is the UD at location $\bs$ and $\bx(\bs)$ are habitat covariates at location $\bs$. This model produces the  type of analytic UD prediction that directly relates the UD to habitat variables through the coefficients $\bb$. However. There are some drawbacks for this approach. First the likelihood for this model is not available in closed form, so a discrete time approximation must be use. Second, this model is only applicable to continuously valued covariates because the habitat gradient surfaces, $\nabla \bx(\bs)$, are used in the movement model \citep{michelot2018langevin}. Finally, the Langevin diffusion limiting distribution in (\ref{eq:exp.form}) is only valid when the diffusion component is constant. That is the animal does not change its overall rate movement in different habitats; only the advection component is altered by habitat (See Section 3). 
+where $\bu(\bs)$ is the UD at location $\bs$ and $\bx(\bs)$ are habitat covariates at location $\bs$. This model produces the  type of closed-form UD prediction that directly relates the UD to habitat variables through the coefficients $\bb$. However. There are some drawbacks for this approach. First the likelihood for this model is not available in closed form, so a discrete time (Euler) approximation must be used. Second, this model is only applicable to continuously valued covariates because the habitat gradient surfaces, $\nabla \bx(\bs)$, must be used in the movement model \citep{michelot2018langevin}. Finally, the Langevin diffusion limiting distribution in (\ref{eq:exp.form}) is only valid when the diffusion component is constant. That is the animal does not change its overall rate movement in different habitats; only the advection component is altered by habitat (See Section 3). However, \cite{Blackwell2026a} has demonstrated that this is not necessary for more general diffusions. 
 
-Herein we consider a general class of CTMC models for which we can obtain closed form predictions of the UD from the fitted model parameters. The CTMC model has several advantages over the Langevin derived UD. First, there is no approximation necessary to calculate the likelihood for optimization. Second, continuous or discrete habitat covariates can be used for movement modeling and UD prediction. Finally, overall movement rate can be influenced by habitat, that is, diffusion rate can be altered by habitat, not just advection. Moreover, because there is no approximation for the likelihood that error does not propagate to the UD prediction, so it is exact. To fit these model, we also developed the {\tt R} package {\tt walk}\footnote{Available from: \url{https://dsjohnson.r-universe.dev/walk}} that can fit general CTMC models including the more general forms requiring numerical calculation of the UD. 
+Herein we consider a general class of CTMC models for which we can obtain closed-form predictions of the UD from the fitted model parameters. The CTMC model has several advantages over the Langevin derived UD. First, there is no approximation necessary to calculate the likelihood for optimization. Second, continuous or discrete habitat covariates can be used for movement modeling and UD prediction. Finally, the diffusion rate can be influenced by habitat not just the advection rate. Moreover, because there is no approximation for the likelihood that error does not propagate to the UD prediction, so it is exact. To fit these CTMC models, we developed the {\tt R} package {\tt walk}\footnote{Available from: \url{https://dsjohnson.r-universe.dev/walk}} that can fit general CTMC models including the more general forms requiring numerical calculation of the UD as presented by \cite{Hanks:2015aa} and \cite{wilsonestimating}. The process of fitting models and making UD inference is demonstrated with data from a false killer whale ()
 
-
-%There is one drawback to the CTMC model if form (\ref{eq:exp.form}) is desired. That is one cannot use gradient surface covariates such as the ocean current or surface wind vector fields that \cite{Johnson353516} used to model fur seal ({\it Callorhinus ursinus}) migration with a CTMC model. This is not a shortcoming of CTMC models, it just cannot be proven that it has exponential form, but the numerical methods. So, in addition to exact UD modeling we will also consider approximations to  Langevin diffusions using CTMCs and a discrete space approximation as opposed to the discrete time approximation of \citep{michelot2018langevin}. To fit these model, we also developed the {\tt R} package {\tt walk}\footnote{Available from: \url{https://dsjohnson.r-universe.dev/walk}} that can fit general CTMC models including the more general forms requiring numerical calculation of the UD. 
 
 %\cite{wilsonestimating}
 %
@@ -156,7 +185,7 @@ Herein we consider a general class of CTMC models for which we can obtain closed
 
 \section{Continuous-Time Markov Movement Models}
 
-Here we provide a brief description of continuous-time Markov chain (CTMC) models. More detail can be found in \citet{norris1998markov}, \cite{Johnson353516}, or \cite{Hanks:2015aa}. In a CTMC movement model the geographical study domain is partitioned into a cells or other discrete locations indexed by $\fC = \{1,\dots,n\}$. Each cell, $i$, has a set of neighboring cells $\fN_i = \{j\in \fC: i \sim j\}$, where $i\sim j$ means that an animal can go from cell $i$ to cell $j$ in one move. For example, in a raster partition, neighboring cells might share a border (rook neighborhood) or a corner point(queen neighborhood). Here we assume that if $i\sim j$, then $j\sim i$, that is, movement is symmetric between cells. As with all CTMCs, the complete path of the animal, $P$, can be decomposed into the {\it jump times} at which cell transitions are made, $\btau = \{\tau_0,\tau_1,\dots,\tau_M, \tau_{M+1}\}$, and the {\it embedded Markov chain}, which is the sequence of discrete-space cells visited, $\fG = \{g_0,\dots,g_M\}$. Thus, the CTMC path has the bivariate discrete-time representation $P=\{(\tau_m, g_m):m=0,\dots,M\}$, where $\tau_0 = 0$ and $\tau_{M+1} = T$ is the known end of the telemetry deployment. In a slight abuse of notation, we also use $g_t$ and $\fN_t$ (i.e., indexed by continuous time, $t\in [0,T]$) to represent the location and neighborhood of the animal for any time, that is, $g_t = g_m$ and $\fN_t = \fN_{g_m}$ for $t \in [\tau_m, \tau_{m+1})$. It is apparent which context is being used in a particular situation.
+Here we provide a brief description of continuous-time Markov chain (CTMC) models. More detail can be found in \citet{norris1998markov}, \cite{Johnson353516}, or \cite{Hanks:2015aa}. In a CTMC movement model the geographical study domain is partitioned into a cells or other discrete locations indexed by $\fC = \{1,\dots,n\}$. Each cell, $i$, has a set of neighboring cells $\fN_i = \{j\in \fC: i \sim j\}$, where $i\sim j$ means that an animal can go from cell $i$ to cell $j$ in one move. For example, in a raster partition, neighboring cells might share a border (rook neighborhood) or a corner point(queen neighborhood). Here we assume that if $i\sim j$, then $j\sim i$, that is, movement is symmetric between cells. As with all CTMCs, the complete path of the animal, $Y$, can be decomposed into the {\it jump times} at which cell transitions are made, $\btau = \{\tau_0,\tau_1,\dots,\tau_M, \tau_{M+1}\}$, and the {\it embedded Markov chain}, which is the sequence of discrete-space cells visited, $\fG = \{g_0,\dots,g_M\}$. Thus, the CTMC path has the bivariate discrete-time representation $Y=\{(\tau_m, g_m):m=0,\dots,M\}$, where $\tau_0 = 0$ and $\tau_{M+1} = T$ is the known end of the telemetry deployment. In a slight abuse of notation, we also use $g_t$ and $\fN_t$ (i.e., indexed by continuous time, $t\in [0,T]$) to represent the location and neighborhood of the animal for any time, that is, $g_t = g_m$ and $\fN_t = \fN_{g_m}$ for $t \in [\tau_m, \tau_{m+1})$. It is apparent which context is being used in a particular situation.
 
 CTMC models are defined by the conditional movement rates between cells,
 \begin{equation}
@@ -168,7 +197,7 @@ We use the notation `$[A|B]$' to represent the probability density (distribution
 \label{eq:total.haz}
 \Lambda_i = \sum_{j\in\fN_i} \lambda_{ij}.
 \end{equation}
-One other useful property of CTMCs is that the residence time in a cell, $r_m = \tau_{m+1}-\tau_{m}$, is distributed,
+One other useful property of CTMCs is that the residence time in a cell, $r_m = \tau_{m+1}-\tau_{m}$, is exponentially distributed,
 \[
 [r_m|g_m=i] = \text{Exponential}(r_m|\Lambda_i).
 \]
@@ -177,10 +206,7 @@ Then the transition matrix from $g_0 \in \fC$ to $g_t\in\fC$ is,
 \[
 \bG(t) = \text{exp}\left(\bQ t\right),
 \] 
-where ``exp" is the matrix exponential function. The conditional distribution of $[g_t|g_0=i] = \bg_i(t)$ is the $i$th row of $\bG(t)$. The movement process can also de thought of as the solution to 
-
- Then the movement process can be described as the discrete space diffusion process,
-
+where ``exp" is the matrix exponential function. The conditional distribution of $[g_t|g_0=i] = \bg_i(t)$ is the $i$th row of $\bG(t)$. 
 
 If a limiting distribution exists, as $t \to \infty$, $\bg_i(t) \to \bu$ regardless of what cell the animal is in currently. The conditions under which a CTMC will have a long-run limiting distribution over the study area are outlined by \cite{wilsonestimating}. These conditions are
 \begin{enumerate}
@@ -188,25 +214,20 @@ If a limiting distribution exists, as $t \to \infty$, $\bg_i(t) \to \bu$ regardl
 \item {\it Irreducibility}.-- Any cell can be reached from any other cell given sufficient time. In practice, that the study are is not separated into multiple areas by impenetrable barriers.
 \item {\it Positive recurrence}.-- After an animal leaves a cell the amount of time it takes for the animal to visit that cell again is finite.
 \end{enumerate}
-\citet{wilsonestimating} use numerical Eigen decomposition of $\bQ$ to obtain $\bu$, but they also present an addtional, well known, CTMC result that we use. Assuming the previous conditions are met for a CTMC (in fact, {\it semi}-Markov) model, the limiting distribution elements can be evaluated as 
+\citet{wilsonestimating} use numerical Eigen decomposition of $\bQ$ to obtain $\bu$, but they also present an additional, well known, CTMC result that we use. Assuming the previous conditions are met for a CTMC model, the limiting distribution can be evaluated as 
 \begin{equation}
 \label{eq:embed.u}
 u_i \propto \alpha_i / \Lambda_i
 \end{equation}
 where $\ba$ is the limiting distribution of the embedded Markov chain, $\{g_0,g_1,\dots\}$. This makes intuitive sense that the long-run probability of occurrence is the long-run probability the animal is in the cell weighted by the expected amount of time it spends there. 
 
-\section{Explicit Utilization Distribution Models}
+\section{Explicit Utilization Distribution CTMC Models}
 
 Now that we have a background CTMC we can turn to modeling utilization distributions (UDs) directly. Here we assume the UD has the exponential form for the $i$th element of $\bu$,
 \[
 u_i \propto \exp(v_i),
 \] 
-where, typically, $v_i = \bx_i'\bb$ and $\bx_i$ is a vector of habitat variables for the $i$th cell. However, we do not necessarily need to restrict ourselves to that linear form now. In the next two section we explore two different approaches. The first involves developing a CTMC movement model such that the resulting limiting distribution will have the desired UD form. The second approach is to approximate a continuous-space diffusion model that has a known limiting distribution of the desired form (e.g., \citealt{xxx})
-
-
-\subsection{Exact UD modeling}
-
-In this section we develop a CTMC movement model that has the desired closed form UD as the limiting distribution. We use Markov Chain Monte Carlo (MCMC) theoretical results ({\it sensu} \citealt{michelot2018linking}) to show that the limiting distribution does, indeed, have the desired exponential form. 
+where, typically, $v_i = \bx_i'\bb$ and $\bx_i$ is a vector of habitat variables for the $i$th cell. However, we do not necessarily need to restrict ourselves to that linear form now. We use Markov Chain Monte Carlo (MCMC) theoretical results \citep{michelot2018linking,Blackwell2026a} to show that the limiting distribution does, indeed, have the desired exponential form. 
 
 The CTMC movement model we consider here has the form  
 \begin{equation}
@@ -216,91 +237,127 @@ The CTMC movement model we consider here has the form
 where 
 \begin{itemize}
 \item $\beta_0$ is a base rate of movement,
-\item $a_i$ controls residency time when the animal is in cell $i$
-\item $b_j$ controls movement to cell $j$ from any cell in $\fN_j$, and
+\item $a_i$ only controls residency time when the animal is in cell $i$
+\item $b_j$ controls movement to cell $j$ from any cell in $\fN_i$, and
 \item $c_{ij}$ controls movement specifically from cell $i$ to cell $j$.
 \end{itemize}
 Of course, each of the terms can be functions of spatial covariates. If the neighbor-specific terms are symmetric, that is, $c_{ij} = c_{ji}$, then we use the embedded chain result (\ref{eq:embed.u}) and MCMC theory to show (Appendix A) the limiting distribution is,
 \[
-u_i \propto \exp(b_i - a_i),
+u_i \propto \exp( - a_i + b_i),
 \]
-which has the desired form. Moreover if $a_i = \bx_{ai}'\bb_a$ and $b_i = \bx_{bi}'\bb_b$, then $u_i$ has the form
+which has the desired form. If $a_i = \bx_{ai}'\bb_a$ and $b_i = \bx_{bi}'\bb_b$, then $u_i$ has the form
 \[
 u_i \propto  \exp(\bx_i' \bb),
 \] 
-where $\bx_i' = (\bx_{bi}',\bx_{ai}')$ and $\bb = (\bb_b, -\bb_a)$. This is the discrete-space equivalent of the continuous-space predictive UD given by \cite{Barnett:2008wj}. However, there is another specific condition for $c_{ij}$ that also produces a closed exponential form UD, $c_{ij} = d_j-d_i$. That is if the cell pair effects are local differences of cell specific conditions then the UD has the form,
+where $\bx_i' = (\bx_{ai}', \bx_{bi}')$ and $\bb = (-\bb_a,\bb_b)$. This is the discrete-space equivalent of the continuous-space predictive UD given by \cite{Barnett:2008wj}. However, there is another specific condition for $c_{ij}$ that also produces a closed exponential form UD, $c_{ij} = d_j-d_i$. That is if the cell pair effects are local differences of cell specific conditions then the UD has the form,
 \[
-u_i \propto  \exp(b_i - a_i+2d_i),
+u_i \propto  \exp(-a_i + b_i +2d_i),
 \] 
-(see Appendix A). If $d_i = \bx_{di}'\bb_d$ we get the same log-linear exponential form where  $\bx_i' = (\bx_{bi}',\bx_{ai}', \bx_{di}')$ and $\bb = (\bb_b, -\bb_a, 2\bb_d)$.
+(Appendix A). If $d_i = \bx_{di}'\bb_d$ we get the same log-linear exponential form where  $\bx_i' = (\bx_{ai}',\bx_{bi}', \bx_{di}')$ and $\bb = (-\bb_a, \bb_b, 2\bb_d)$.
 
 
-%\subsection{CTMC approximation of diffusion movement models}
-%
-%Here we form our model based on a continuous-space diffusion model. Under this approach, the set of discrete cells approximates a continuous spatial area (most likely the true situation). The model we consider is defined by the 2d stochastic differential equation 
-%\[
-%d\bs_t = \bmu(\bs_t)dt + \sigma(\bs_t)d\mathbf{w}_t
-%\]
-%where $\bs_t$ is the location at time $t$, $\bmu$ is the drift (advection) function, $\sigma$ is the diffusion coefficient function, and $\bw_t$ is a standard Brownian motion. An common example for animal movement modeling is the Langevin diffusion \citep{michelot2018langevin}, which is obtained by setting $\sigma(\bs) = \sigma$ and $\bmu(\bs) = \nabla \log v(\bs)$, where $v(\bs)$ is a potential function \citep{xxx} and $\nabla = (\partial/\partial x, \partial/\partial y)$ is the gradient operator. The limiting distribution of this specification of the Langevin diffusion is 
-%\[
-%u(\bs) \propto \exp(2v(\bs)/\sigma^2)
-%\] 
-%\citep{xxx}.
-%
-%If we start with the UD model of the form $u(\bs) \propto \exp(\bx(\bs)'\bb)$ then the drift function that will produce the desired UD (outside of scaling by $2/\sigma$) is 
-%\[
-%\bmu(\bs) = \sum \beta_j \nabla x_j(\bs)
-%\]
-%To fit this model to collected telemetry data \citep{michelot2018langevin} use a time discretization approximation along with and stochastic imputation process \citep{xxx} to account for gaps in the location record , as well as, location uncertainty. 
-%
-%As an alternative to time discretization, we can use a continuous-time, discrete-space approximation. This is accomplished by approximating the SDE process $\bs_t$ with a CTMC process, $\by_t$. The state-space for $\by_t$ is a uniform grid of locations $\fN = \{\tilde{\bs}_1,\dots,\tilde{\bs}_n\}$ in the study area where $||\tilde{\bs}_i-\tilde{\bs}_j|| = h$ for any neighboring locations. Either a raster or hex grid will work. A general result for this type of approximation is that as $h \to 0$, $\by_t$ is asymptotically equivalent to $\bs_t$ if the following conditions hold for elements of the CTMC rate transition matrix
-%\begin{enumerate}
-%\item $\sum_{j\ne i} \lambda_{ij} h \be_{ij} = \bmu_i + o(h)$
-%\item $\sum_{j\ne i} \lambda_{ij} h^2 \be_{ij}\be_{ij}' = \sigma^2\mathbf{I} + o(h)$,
-%\end{enumerate}
-%where $\bmu_i = \bmu(\tilde{\bs}_i)$ and $\be_{ij}$ is a unit-length vector from $\tilde{\bs}_i$ to $\tilde{\bs}_j$ \citep{xxx}. Heuristically, the limit of the instantaneous mean and variance of $\by_t$ must be the same as $\bs_t$. 
-%
-%We can construct movement rates to fit the previously mentioned convergence criteria and this has been proposed several times for raster grids where the neighbors are the cells to the north, south, east and west (rook). However we can extend the same type of rate specification to hexagon grids as well as queen neighborhoods (includes diagonal neighbors) for raster grids (see Appendix B). 
-%
-%Rook neighborhood raster grids and hexagon grids are similar in that the distance, $h$, is the same for all neighbors (4 and 6 respectively) and we can form the CTMC movement rates, 
-%\[
-%\lambda_{ij} = \frac{[\be_{ij}'\bmu_i]_+}{kh/2} + \frac{\sigma^2}{kh^2}, 
-%\]
-%where $[x]_+= \max(x, 0)$ and $k = 2$ for raster grids and $k=3$ for hexagon grids. One can verify the approximation by checking the convergence conditions (see Appendix B). Furthermore, if one can ensure that $\sigma^2 > h\be_{ij}'\bmu_i$ for all $i$ and $j$ then we can drop the positive-portion function ($[x]_+$) and use,
-%\[
-%\lambda_{ij} = \frac{\be_{ij}'\bmu_i}{kh} + \frac{\sigma^2}{kh^2}.
-%\]
-%This is more accurate for all $h$ but one must ensure that $\lambda_{ij}$ remains positive throughout the model fitting process, otherwise negative movement rates will result. Of course one can always make $h$ as small as necessary, but this may be impractical if the magnitude of the drift is large for even one grid cell. We can extend this results for queen neighborhood specification on raster grids by defining movement rates as,
-%\[
-%\lambda_{ij}= \frac{[\be_{ij}'\bmu_i]_+}{2h_{ij}} + \frac{\sigma^2}{4h_{ij}^2} 
-%\]
-%where $h_{ij}=h$ for rook neighbors and $h_{ij} = h\sqrt{2}$ for diagonal neighbors. Again, if we can ensure that $\sigma^2 > h_{ij} \be_{ij}'\bmu_i$ for all $i$ and $j$, we can use,
-%\[
-%\lambda_{ij}= \frac{\be_{ij}'\bmu_i}{4h_{ij}} + \frac{\sigma^2}{4h_{ij}^2}. 
-%\]
  
 \section{CTMC parameter estimation}
 
-HMM specs
+Previous estimation of CTMC movement parameters using satellite location telemetry data used an imputation method (see \citealt{ScharfEtAl2017a}) which fills in missing cell locations between location acquisition times \citep{Hanks:2015aa, wilsonestimating, Johnson353516}. Even though the imputation method attempts to propagate the uncertainty of the missing locations, it is unclear how this affects estimation of the parameters. Therefore we will use the exact, although, more computationally expensive hidden Markov model (HMM) formulation of the model that is often use for CTMC analysis marine fish movement from archival telemetry tags (e.g., see CH. 10 of \citealt{thorson2024spatio}). 
 
-\section{False killer whale UDs}
+\subsection{Hidden Markov model specification}
 
-In this section, we will apply the modeling approach described herein to a telemetry dataset on endangered false killer whales (\emph{Pseudorca crassidens}) in the Hawaiian Islands \citep{baird2016lives}. This particular population is resident to the insular waters of the main Hawaiian Islands (includes Kaua`i/Ni`ihau, Oahu, Maui Nui, and Hawai`i Island) and is comprised of five social clusters, or groups of close family members and regular associates \citep{baird2008false, baird2019cooperative, baird2016lives, martien2019fidelity}. These whales are known to move quickly and frequently among island areas throughout their range, and previous studies have indicated that core areas of use vary among social clusters \citep{baird2010movements, baird2012range, baird2021bringing, baird2016lives}. Due to inherent challenges associated with tracking apex marine predators, this dataset is characterized by variable deployment durations and irregular location data streams. Considering these factors may drive start bias, as well as their expansive range, we deem this an appropriate dataset to empirically demonstrate the utility of predictive UDs. For the purposes of this assessment, we only focus on movements from the social cluster with the most comprehensive dataset (Cluster 1). 
+\subsubsection{Satellite telemetry data specification and processing}
+For the proposed analysis we consider satellite telemetry data for an individual of the form $\by = \{\by_1,\dots,\by_K\}$, where $\by_k = (\bs_k, t_k, \be_k)$, $\bs_k$ is the observed location of the individual within the study area at time $t_k$ and $\be_k$ represents information or parameters governing location uncertainty. For example, $\be_k$ might represent the major and minor error ellipse lengths of a Kalman Filtered Argos location \citep{mcclintock2015modelling} or a known error radius for GPS locations, e.g., 20m. From these locations we translate the continuous-space data locations and uncertainty to the discrete grid, $\fC$, using a function, say, $p(\by_k,\fC) = \bp_k = (p_{1k},\dots,p_{nk})$, where $p_{ik}$ is the probability that the animal is located within cell $i$ at time $t_k$. We used a general form because the function, $p$, will depend on how location uncertain is assessed for the specific satellite and tag hardware. However, uncertainty in the true location, $\bmu_k$, is often represented by the bivariate Normal distribution $\bmu_k \sim N(\bs_k, \bSig_k)$, where $\be_k = \bSig_k$. Therefore $p_{ik}$ would represent the mass of the Normal distribution contained within the $i$th cell. For a raster grid partitioning of the study area this can be calculated by,
+\[
+p_{ik} = \text{CDF}(x_{i2}, y_{i2}) - \text{CDF}(x_{i2}, y_{i1}) - \text{CDF}(x_{i1}, y_{i2}) + \text{CDF}(x_{i1}, y_{i1})
+\]    
+where $[x_{i1}, x_{i2}] \times [y_{i1}, y_{i2}]$ is the bounding box for the $i$th cell and $\text{CDF}$ is the bivariate normal cumulative density function with mean $\bs_k$ and covariance $\bSig_k$. A Monte Carlo option for other error distributions would be to draw a sufficiently large sample from the distribution and assess the proportion of samples that falls within each cell. 
 
-False killer whale satellite tag deployment methods have been described in detail elsewhere (see \citealt{baird2010movements, baird2012range}) so they are only briefly summarized here. Individuals were tagged with Argos transmitting SPOT5/SPOT6 ($n=28$) and SPLASH10 ($n=1$) tags during dedicated small boat survey efforts throughout the main Hawaiian Islands from 2007 through 2020 (\citealt{baird2012range,baird2021bringing, baird2016lives}; see \citealt{baird2013odontocete} for details on surveys). Deployment duration ranged from 2.1 days to 2014 days (median=43 days). Argos location data were processed through the Douglas-Argos Filter (accessed via Movebank; \citealt{kranstauber2011movebank,douglas2012moderating}) to remove erroneous locations based on unrealistic travel speeds and turning angles. Where dyads of tagged false killer whales exhibited correlated movements, the individual with the longest track duration was retained for analyses and the other excluded to avoid pseudoreplication following \citet{baird2012range}. This dataset includes five individuals that were satellite tagged twice during the study period; trajectories during each deployment were non-similar and thus considered independent. The final analytical dataset consisted of 24 trajectories and 11,795 filtered Argos locations. 
+\subsubsection{Likelihood calculation}
 
-meta analysis: \cite{johnson2022greater} with {\tt mixmeta} package \cite{sera2019extended}
+For an individual the likelihood is calculated with the matrix equation (\citealt{zucchini2016hidden}; Ch. 3),
+\begin{equation}
+\label{eq.lik}
+L_\text{CTMC}(\by) = \bpi'\bP(\by_1)\bG(t_2-t_1)\bP(\by_2)\cdots\bG(t_{K}-t_{K-1})\bP(\by_K)\mathbf{1}
+\end{equation}
+where $\bpi = (\pi_1,\dots,\pi_n)$ is the probability at the individual is cell $i$ at $t_1$, $\bP(\by_k) = \text{diag}(\bp_k)$, $\bG(t_k-t_{k-1}) = \exp\{\bQ(t_k-t_{k-1})\}$, and $\mathbf{1}$ is a vector of 1s. The natural choice for $\bpi$ is $\bu$, the limiting distribution defined by the CTMC movement model, but there are other choices. For example, if a telemetered individual was released at a known location after tagging, then $\bpi$ would be a vector of all 0s except for the cell containing the release site, which would be a 1. In the false killer whale example below, we use $\bpi=\bu$. 
+
+Calculating the likelihood directly as it is presented in (\ref{eq.lik}) can lead to numerical underflow and is much more computationally expensive than necessary. In order to avoid numerical underflow we evaluate the likelihood on the log scale using the alternate version presented in Section 3.2 of \citet{zucchini2016hidden}. The computationally expensive aspect is due to the repeated evaluation of $\bG(t_k-t_{k-1}) = \exp\{\bQ(t_k-t_{k-1})\}$, which is the matrix exponential of a potentially very large dimensional $\bQ$ matrix. However, the full evaluation of $\bG(t_k-t_{k-1})$ is not necessary, we only need to evaluate quantities of the form $\mathbf{v}'\exp\{\bQ(t_k-t_{k-1})\}$. \cite{sherlock2021direct} presents very computationally efficient ways to evaluate this product directly. Moreover, $\bQ$ is a sparse matrix so we can also take advantage of that fact in the evaluations as well. The {\tt walk} package implements the methods of \cite{sherlock2021direct} using sparse matrix operations for evaluating and optimizing the likelihood. 
+
+In addition to the matrix exponential evaluation numerical savings, another optional approach to save computational effort is to set a truncation point for the maximum $\Lambda_i$ value. The numerical methods of \cite{sherlock2021direct} require more matrix operations for higher values of $\max(\Lambda_i)$. For some cells, the log linear $\lambda_{ij}$ model may produce rates of movement that are unrealistically high for the species in question. With respect to UDs this would imply that an individual will not remain in that cell and the $u_i \approx 0$. \cite{Hewitt:2023aa} proposed a logit rate model that restricts this behavior, but that model does not allow us to construct a CTMC with an explicit limiting distribution. So, we propose picking a truncation value, say, $\Lambda^*$ and setting $\lambda_{ij}^* = (\Lambda^*/\Lambda_i)\lambda_{ij}$
+if $\Lambda_i > \Lambda^*$. If $\Lambda^*$ is sufficiently large, this will have negligible impact on $\bb$ and $\bu$ estimation but can dramatically help numerical likelihood evaluation. One reasonable way to choose $\Lambda^*$ is to select the minimum amount of time that an animal would likely to reside in a cell, say $\xi$. Then set $\Lambda^*$ so that the probability of a residence time $< \xi$ is, say, 0.9. That is, with a total cell movement rate of $\Lambda^*$, there is a 90\% chance residency will be $<\xi$. This represents a reasonable upper bound for movement. The effect on $\bb$ and $\bu$ can always be verified by comparing the numerically calculated $\bu$ as presented in \cite{wilsonestimating} versus $u_i \propto \exp(\bx_i'\bb)$. If there are sufficiently large discrepancies, $\Lambda^*$ can be increased. See Section (\ref{sec.fkw.model}) for example.    
+
+
+Once the CTMC movement model has been fitted, recall that the parameters need be adjusted for UD inference. That is the maximum likelihood estimate of $\hat{\bb}_\text{CTMC}=(\hat{\bb}_a,\hat{\bb}_b,\hat{\bb}_d)$ needs to be transformed to the UD coefficients via $\hat{\bb} = \bM \hat{\bb}_\text{CTMC}$, where $\bM = \text{diag}((-1,-\mathbf{1}_a', \mathbf{1}_b', 2\mathbf{1}_d')')$
+Thus, the large sample covariance matrix of the UD coefficients is $\mathbf{V}(\hat{\bb}) = \bM \mathbf{V}(\hat{\bb}_\text{CTMC}) \bM'$. If only the standard errors are desired, one can simply multiply the CTMC coefficient standard errors by the multipliers, but if the entire covariance matrix is desired the matrix multiplication is necessary. 
+
+\section{False killer whale space-use}
+
+In this section, we will apply the modeling approach described herein to a telemetry dataset on endangered false killer whales (FKW; \emph{Pseudorca crassidens}) in the Hawaiian Islands (\citealt{baird2016lives}). This particular population is resident to the insular waters of the main Hawaiian Islands (MHI; includes Kaua`i/Ni`ihau, Oahu, Maui Nui, and Hawai`i Island) and is comprised of five social clusters, or groups of close family members and regular associates \citep{baird2008false, baird2019cooperative, baird2016lives, martien2019fidelity}. These whales are known to move quickly and frequently among island areas throughout their range \citep{baird2010movements, baird2012range, baird2021bringing, baird2016lives}. Due to inherent challenges associated with tracking apex marine predators, this dataset is characterized by variable deployment durations and irregular location data streams. Considering these factors may drive start bias, as well as their expansive range, we deem this an appropriate dataset to empirically demonstrate the utility of predictive UDs. For the purposes of this assessment, we only focus on movements of 5 individuals that were satellite tagged in 2021 and 2022. There is one representative from each social cluster in the data.   
+
+\subsection{Satellite tag data}
+
+False killer whale satellite tag deployment methods have been described in detail elsewhere (see \citealt{baird2010movements, baird2012range}) so they are only briefly summarized here. Individuals were tagged with Argos transmitting SPOT6 ($n=4$) and SPLASH10 ($n=1$) tags during dedicated small boat survey efforts throughout the main Hawaiian Islands (\citealt{baird2012range,baird2021bringing, baird2016lives}; see \citealt{baird2013odontocete} for details on surveys). Deployment duration ranged from 12 days to 81 days (median=40 days). Argos location data were processed through the Douglas-Argos Filter (accessed via Movebank; \citealt{kranstauber2011movebank,douglas2012moderating}) to remove erroneous locations based on unrealistic travel speeds and turning angles. The final analytical dataset consisted of 5 trajectories and 4,009 filtered Argos and Fastloc GPS (SPASH10 tag) locations (Figure \ref{fig.data}A). For the Argos locations, we used the Kalman-filter diagnostic ellipse data to construct error covariance matrices \citep{mcclintock2015modelling}. While for the Fastloc GPS locations, we used the 95\% quantile error ranges from \cite{dujon2014accuracy}, based on the number of satellites acquired, as twice the standard deviation of the normal error.       
+
+\subsection{Study area and habitat variables}
+
+The official management range of the MHI stock of FKW was documented in \cite{BradfordEtAl2015a} and represents a minimum convex polygon surrounding a buffer of the main Hawaiian Islands (see Figure \ref{fig.data}A). This is the study area boundary we use for the UD analysis. 
+
+For habitat characteristics we used two modeled global oceanographic variables from E.U. Copernicus Marine Service: (1) Sea Surface Temperature (SST; $^\circ$C; DOI: \url{https://doi.org/10.48670/moi-00016}) and (2) Sea Level Anomaly (SLA; m; DOI: \url{https://doi.org/10.48670/moi-00148}). SST is available at $0.082^\circ$ resolution and SLA is available at $0.125^\circ$ degree resolution. In order to match resolution we chose to project the SLA raster to the resolution of the SST raster to avoid loosing oceanographic information. Because we are using this variables to predict long term space-use, we used a single layer for each variable that was the 2 year daily average in the study area. This allowed us to model movement with respect to typical oceanographic conditions (Figure 1B-C). 
+
+In addition to the oceanographic variables, we used distance from land (m) to model FKW's resident nature in the MHI. Also, we also included a depth residual variables by adding data from the global, 30 arc-second ETOPO elevation model \citep{etopo2022} and removing the linear trend of distance from land. The distance and depth variables were projected to the $0.082^\circ$ SST resolution as well. Then all data, including telemetry data, were projected to the Hawaii Albers  Equal Area projection, ESRI:102007 (Figure 1D-E) 
+
+\subsection{CTMC movement model and population inference for space-use \label{sec.fkw.model}}
+
+The CTMC movement rate model we used to model the telemetry for each individual $l=1,\dots,5$ was
+\[
+\log \lambda_{ij} = \beta_{0} + \underbrace{\text{DEPTH}_i + \text{SST}_i + \text{SST}^2_i + \text{SLA}_i + \text{SLA}^2_i}_{a_i \text{ portion}} + 
+\underbrace{[\text{DIST}_j - \text{DIST}_i]}_{c_{ij} \text{ portion}}
+\]
+In this model differences of the distance from land variable were used as a movement kernel between cells $i$ and $j$. This allowed individuals to prefer movement towards (or away from) land at the same rate no matter how far away they are. In addition SST, SLA, and DIST were $Z$-transformed for numerical stability. The DEPTH residual was already on a nearly standard normal scale and DIST was only used as a difference, so values were not large enough to cause issue. 
+
+Estimated coefficients and predicted UDs can be difficult to interpret for population inference and management considerations. Therefore, a Bayesian hierarchical or random effects model of the form 
+\[
+\begin{array}{c}
+{}[\by_1,\dots,\by_N|\bb_1,\dots,\bb_N] = \prod_{l=1}^N L_\text{CTMC}(\by_l|\bM^{-1}\bb_l) \\
+{}[\bb_1,\dots,\bb_N|\bt, \bSig] = \prod_{l=1}^N N(\bb_l|\bt, \bSig)
+\end{array}
+\]
+where $\by_l$ is the observed data for individual $i=1,\dots,N$ and the prior distribution for the random effect mean and variance is $[\bt][\bSig]$. Note, we have phased this model in terms of the UD coefficients, $\bb_l$, rather than the movement coefficients, $\bb_{\text{CTMC},l}$ because we are more interested in UD prediction here. But it is just a linear transformation between the two, so, all the results are equivalent. Even if individual inference is desired, it is useful to fit this hierarchical model because it allows us to share information between individuals. That is we can make inference to the posterior distribution $[\bb_l|\by_1,\dots,\by_N]$. If we assume that there is some similarity in movement between individuals of the same species then we can leverage all data for better individual inference. Unfortunately, even with the computational savings, CTMC models are complex enough as to render it infeasible to fit this model jointly.  
+
+While we cannot fit the hierarchical model in one step, there have been several proposed 2 step divide-and-conquer methods to approximate full posterior inference of hierarchical models of this form \citep[e.g., ][]{lunn2013fully, hooten2016hierarchical, johnson2022greater}. Here we use the method of \cite{johnson2022greater} as it allows use to use maximum likelihood estimation in the first step. So, in the first step the CTMC model was fitted separately to the data from each individual using normal location errors as described in Section 4 with maximum likelihood estimation (MLE). For the rate truncation we set $\Lambda^* = 138.16$. This resulted from selecting the minimum residence time to be 1 minute. The second step involves fitting the multivariate linear mixed model,
+\[
+\hat{\bb}_l = \bt + \bu_l + \bd_l; \quad l=1,\dots,N
+\]
+where $\hat{\bb}_l$ is the MLE estimate of the coefficients for the $l$th individual, the random effect is $[\bu_l|\bSig] = N(\mathbf{0},\bSig)$, the error term is $[\bd_l|\bV(\hat{\bb}_l)] = N(\mathbf{0},\bV(\hat{\bb}_l))$, and $\bV(\hat{\bb}_l)$ is the parameter covariance matrix from the first MLE step. For this analysis we used independent random effects, that is, $\bSig = \text{diag}(\sigma_1^2,\dots,\sigma_7^2)$. The  {\tt nimble} R package \citep{Valpine:2017vg} was used to optimize model with respect to the parameters (i.e., maximum {\it a posteriori}, MAP) subject to the prior distributions,
+\[
+\begin{array}{c}
+{}[\theta_w] = N(0, \tau_w^2);\quad [\tau_w] = \text{Exponential}(1) \\
+{}[\sigma_w] = \text{Exponential}(1)
+\end{array}
+\]
+for $w=1,\dots,7$. The exponential priors for the variance parameters were added to penalize the complexity of the model (i.e., regularization) to perform selection for the population level parameters \citep{hooten2015guide,martins2017penalising}. Following second stage model fitting we can extract the approximate MAP estimates $\bar{\bt}$ and $\bar{\bb}_1,\dots,\bar{\bb}_N$, where $\bar{\bb}_l$ is the approximate MAP of the posterior $[\bb_l|\by_1,\dots,\by_N]$. 
+
+\subsection{Results}
+
+Individual results for all individuals were generally consistent with notable deviations being individual PcTag074 did not have any effect of SLA on its UD and PcTag070 had negative effect of the linear SST term (Figure 2). All other coefficients were similar in direction, i.e., less than or greater than 0. This bolsters the idea of using the 2 stage meta-analytic approach to share data between individuals to improve estimates. The second stage individual coefficient estimates, $\bar{\bb}_l$ illustrate that there is only a significant amount of individual variation in the DEPTH and SLA$^2$ coefficients (Figure 2). All other second stage coefficients are shrunk to the population mean estimates, $\bar{\bt}$ with nearly identical approximate credible intervals (Figure 2). There was only 1 nonsignificant population coefficient, the linear SLA term. Correspondingly, the penalized model complexity priors shrunk the SLA term to zero. All other population coefficients were different than zero. The DEPTH and DISTANCE coefficients were negative as expected because this population inhabits shallower waters close to the MHI without venturing away. The zero SLA coefficient combined with the negative SLA$^2$ term implies a maximum effect at 0, but we used A $Z$-transform, therefore, the maximum effect occurs at the mean original SLA value. Both SST coefficients are positive implying that the typical individual is probably  located in the warmest SST conditions in the study area.   
+
+Unsurprisingly, the similarity in coefficient estimates produced similar predicted UDs at the first stage (Figure 3). Individual PcTag074 had a more notably diffuse UD, the other four individuals had very similar looking UDs. This may be due to the lack of SLA effect on the UD of PcTag074. After the second stage, the UDs are even more similar as the second stage coefficients are essentially the same at the population mean coefficients (Figure 4). The UD created from the population mean coefficients is illustrated in Figure 4 (Typical). This is the UD of a so called ``Typical'' or median individual, not the population average UD because of the log link between the coefficients and the UD. Even after the second stage the coefficients for PcTag074 lack any SLA effect, so the UD is the only substantially different one from the typical UD.   
+
+In order to check that the rate truncation did not aversely affect the estimated UDs we compared the truncated numerical Eigen decomposition UD ($u_{\text{ei},i}$; \citealt{wilsonestimating}) with the exponential closed form version using Bhattacharyya's Affinity ($BA$) \citep{BHATTACHARYYA1943a},
+\[
+BA = \sum_{i \in \fC} \sqrt{u_{\text{ei},i} \cdot u_{i}}.
+\]
+The values of BA range from 0 (no similarity) to 1 (identical distributions) \cite{FiebergKochanny2005a}. The proportion of study area cells truncated in the fitting of individual models ranged from 0--44\% of the study area. However, $BA$ ranged from 0.996--1 indicated that the truncated cells possessed very little UD mass and the closed form and exact truncated UDs were virtually identical. Therefore, we can be assured that the truncation approximation did not adversely affect parameter estimation.    
 
 \section{Discussion}
 
+%Also, because the model was built on a defined set of cells, if it is changed, for example, the resolution of a raster grid is increased, it is not apparent how the parameters relate to each other. 
+%
+%If the grid is fixed based on habitat covariates, then this is not an issue, but if there is some flexibility in how the set of cells is determined this may be a issue. 
 
-The key assumption here is that the cell pair specific movement rate is symmetric which implies that one can not form the model with gradient-based covariates such as used by \cite{Hanks:2015aa} and \cite{wilsonestimating}. These models are more similar to the resource selection function (RSF) models of \cite{Johnson:2008kx, Johnson:2013fk}. Also, because the model was built on a defined set of cells, if it is changed, for example, the resolution of a raster grid is increased, it is not apparent how the parameters relate to each other. If the grid is fixed based on habitat covariates, then this is not an issue, but if there is some flexibility in how the set of cells is determined this may be a issue. In the next section we can form models using a continuous-space diffusion approximation. 
 
-behavior switching model
-
-
+% imputation: \cite{ScharfEtAl2017a}, \cite{Hanks:2015aa}, \cite{Johnson353516}
 
 \section*{Acknowledgments}
+
 The findings and conclusions in the paper are those of the authors and do not necessarily represent the views of the National Marine Fisheries Service, NOAA. Reference to trade names does not imply endorsement by the National Marine Fisheries Service, NOAA.
 
 
@@ -310,40 +367,77 @@ The findings and conclusions in the paper are those of the authors and do not ne
 
 Tables.
 
+\end{spacing}
+
 \clearpage
 
-Figures.
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.75\paperwidth]{figures/data_fig.png}
+\caption{\label{fig.data} Habitat covariates}
+\end{center}
+\end{figure}
+
+\clearpage
 
 \begin{figure}
-\caption{Test caption}
+\begin{center}
+\includegraphics[width=0.75\paperwidth]{figures/par_plt.pdf}
+\caption{Parameter estimates for fitted UD surfaces. The Stage 1 values are from individually fitted models. The Stage 2 estimates are parameters estimates using the two stage method of \cite{johnson2022greater} to approximate a combined random effects model. The solid vertical lines are the estimated random effect means and the dashed lines are the approximate 95\%  credible intervals.} 
+\end{center}
 \end{figure}
 
 
 \clearpage
 
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.75\paperwidth]{figures/ifit_fig.png}
+\caption{Individual model predicted utilization distributions. These UDs were predicted using only the data from each respective individual. A UD prediction for PcTag071 is absent because the resulting prediction was nonsensical given the individual movement parameter estimates. That is, large (but highly uncertain) SLA and SLA$^2$ coefficients resulted in only a few cells getting all the UD mass. This illustrates one of the problem when using movement models to predict space use.} 
+\end{center}
+\end{figure}
+
+\clearpage
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.75\paperwidth]{figures/meta_fig.png}
+\caption{Predicted UDs after 2 stage approach.} 
+\end{center}
+\end{figure}
+
+
+\clearpage
+
+\begin{spacing}{1.9}
+
 \appendix 
+
+\setlength{\parindent}{2em}
 
 \section{Proof of closed form CTMC limiting distribution}
 
-Using the Metropolis-Hastings (MH) algorithm we can show, by construction, that a Markov chain has a desired limiting distribution. The MH algorithm is designed to sample from a distribution $c^{-1}\alpha(x)$ when the proportionality constant is unknown. It accomplishes this feet by constructing a Markov process $q(X_t|X_{t-1})$ to move from state $X_{t-1}$ to $X_t$ such that, asymptotically, $X_t \sim c^{-1}\alpha(x)$ as $t\to \infty$. Full details of the MH algorithm can be found in \cite{chib1995understanding}, but the basic version proceeds as follows for desired limiting distribution, $c^{-1}\alpha(x)$, \bigskip
+Using the Metropolis-Hastings (MH) algorithm we can show, by construction, that the limiting distribution of the CTMC we are considering has the limiting distribution stated in Section 3.1. Recall that the limiting distribution of a CTMC is $\bu$ with $i$th element $u_i = \alpha_i/\Lambda_i$ where $\ba$ is the limiting distribution of the embedded chain, $\fG$. So, we can use the theoretical results of the MH algorithm to show that the discrete-time chain, $\fG$, has the appropriate limiting distribution. 
+
+In general, the MH algorithm is designed to sample from a distribution $c^{-1}\pi(x)$ when the proportionality constant is unknown. It accomplishes this feet by constructing a Markov process $q(X_t|X_{t-1})$ to move from state $X_{t-1}$ to $X_t$ such that, asymptotically, $X_t \sim c^{-1}\pi(x)$ as $t\to \infty$. Full details of the MH algorithm can be found in \cite{chib1995understanding}, but the basic version proceeds as follows for desired limiting distribution, $c^{-1}\pi(x)$, \bigskip
 \hrule
 \begin{enumerate}
 \item For current state $X_{t-1} = x$ propose $X_t = x'$ from probability distribution $q(x'|x)$.
 \item With probability 
 \[
-R_t = \min \left\{ \frac{\alpha(x')q(x|x')}{\alpha(x)q(x'|x)}, 1 \right\}
+R_t = \min \left\{ \frac{\pi(x')q(x|x')}{\pi(x)q(x'|x)}, 1 \right\}
 \]
 set $X_t = x'$ else, set $X_t = x$. 
 \item Repeat. 
 \end{enumerate}
 \hrule \bigskip
-The acceptance step of the MH algorithm is the key feature the ensures, under certain general regularity conditions, that the distribution of $X_t \sim c^{-1}\alpha(x)$ as $t\to \infty$. The Markov process $q(\cdot|\cdot)$ need not necessarily have a limiting distribution, but the acceptance step will produce a chain with limiting distribution $c^{-1}\alpha(x)$. If $R_t \ge 1$ for all $t$, then no matter what state is proposed by $q(\cdot|\cdot)$, it is accepted, thus, it is the same as simply drawing a realization of the $q(\cdot|\cdot)$ process. In that case, the limiting distribution of $q(\cdot|\cdot)$ is $c^{-1}\alpha(x)$ by construction.
+The acceptance step of the MH algorithm is the key feature the ensures, under certain general regularity conditions, that the distribution of $X_t \sim c^{-1}\pi(x)$ as $t\to \infty$. The Markov process $q(\cdot|\cdot)$ need not necessarily have a limiting distribution, but the acceptance step will produce a chain with limiting distribution $c^{-1}\pi(x)$. If $R_t \ge 1$ for all $t$, then no matter what state is proposed by $q(\cdot|\cdot)$, it is accepted, thus, it is the same as simply drawing a realization of the $q(\cdot|\cdot)$ process. In that case, the limiting distribution of $q(\cdot|\cdot)$ is $c^{-1}\pi(x)$ by construction.
 
 We now return to the CTMC movement model in Section 3.1 to prove the resulting limiting distribution is as stated. Recall the proposed CTMC has movement rate function of the form,
 \[
 \lambda_{ij}(t) = \exp\{\beta_0 + a_i + b_j + c_{ij}\}.
 \]
-The embedded Markov chain, $\fG$, $g_0,g_1\dots,g_m,\dots$, for the CTMC movement process is defined by the transition probabilities \citep{xxx},
+The embedded Markov chain, $\fG$, for the CTMC movement process is defined by the transition probabilities \citep{xxx},
 \[
 q(g_m=j|g_{m-1}=i) = \lambda_{ij}/ \Lambda_i \text{ for } i \sim j,
 \]
@@ -359,95 +453,11 @@ We begin be evaluating the MH acceptance ratio for our CTMC model. After canceli
 R_m &= \frac{\exp\{a_j + b_i\}\Lambda_i}{\alpha_i} \times \frac{\alpha_j}{\exp\{a_i + b_j\}\Lambda_j} \times \frac{\exp\{c_{ji}\}}{\exp\{c_{ij}\}} \\
 &= \frac{\exp\{b_i-a_i\}\Lambda_i}{\alpha_i} \times \frac{\alpha_j}{\exp\{b_j-a_j\}\Lambda_j} \times \exp\{c_{ji}-c_{ij}\}\end{aligned}
 \end{equation}
-From this MH acceptance ratio, one can see that a set of sufficient conditions that satisfy $R_m \ge 1$ for all $m = 1,2,\dots$ and all $(i,j)$ such that $i\sim j$ is 
+From this MH acceptance ratio, one can see that a set of sufficient conditions that satisfy $R_m \ge 1$ for all $m = 1,2,\dots$ and all $(i,j)$ such that $i\sim j$ are: 
 \begin{enumerate}
-\item $\alpha_i \propto \exp\{b_i-a_i\}\Lambda_i$
-\item \begin{enumerate}
- \item $c_{ij} = c_{ji}$ or 
- \item $c_{ij} = d_j - d_i$
- \end{enumerate}
+\item If $c_{ij} = c_{ji}$, then $\alpha_i \propto \exp\{b_i-a_i\}\Lambda_i$, else if,
+\item If $c_{ij} = d_j - d_i$ (i.e., a difference of cell indexed effects), then $c_{ji}-c_{ij} = 2d_i-2d_j$ and $\alpha_i \propto \exp\{b_i-a_i+2d_i\}\Lambda_i$ satisfies the condition for the limiting distribution of the embedded chain. 
 \end{enumerate}
-If condition 2a. holds then the cell-pair specific movements are symmetric and 
-\[
-u_i \propto \exp\{b_i-a_i\}
-\]
-If condition 2b. holds, that is $c_{ij}$ is constructed as a difference between cell indexed terms, and cell-pair specific movement effects are modeled with relative local differences in cell effects, we can still evaluate the UD in the closed exponential form. The term on the right-hand side of (\ref{eq:acc.ratio}) becomes $\exp\{2d_i-2d_j\}$ and can be distributed to the numerator and denominator to produce 
-\[
-\alpha_i \propto \exp\{b_i-a_i+2d_i\}\Lambda_i
-\]
-which satisfies the $R_m\ge 1$ condition and is the limiting distribution. 
-
-%\section{SDE approximation results}
-%
-%$$
-%\begin{aligned}
-%\sum_{j\ne i} \left(\frac{\delta_{ij}}{kh/2} + \frac{\sigma^2_i}{kh^2}\right) h u_{ij} 
-%&= 2k^{-1}\sum_{j\ne i} \delta_{ij}u_{ij} +  (hk)^{-1}\sigma^2_i\sum_{j\ne i}u_{ij} \\
-%&=  2k^{-1}\sum_{j\ne i} \delta_{ij}u_{ij} \\
-%&=  2k^{-1}\sum_{j\ne i,\ u_{ij}'\mu_i > 0} (u_{ij}'\mu_i)u_{ij} = \mu_i
-%\end{aligned},
-%$$ This results is due to the fact that, (a) $\sum_{j\ne i}u_{ij} = 0$ because the set of unit vectors is composed of 2 (raster) or 3 (hexagon) pairs of vectors where $u_{ij} = -u_{ij'}$, thus the sum over all the directional vectors is the zero vector. The equality in the last line is not as direct. To show it is true, we can rearrange the left side of the last line by noting $$
-%\sum_{j\ne i,\ u_{ij}'\mu_i > 0} (u_{ij}'\mu_i)u_{ij} = U_i'U_i\mu_i,
-%$$ where $U_i$ is a matrix with rows equal to the 3 (for hexagon grid) or 2 (for raster grids) $u_{ij}$ vectors contributing to the sum. These vectors will always be separated by $\pi/3$ (hexagon) or $\pi/2$ (raster) radians. This is because $u'\mu_i \ge 0$ if it lies within the span of $\mu_i$ rotated by $\pm \pi/2$ radians. Therefore, we will begin with the hexagon case and the assumption that $\mu_i$ lies in the first quadrant, Thus going in a counterclockwise direction, $$
-%U = \left[ 
-%\begin{array}{cc}
-%1 & 0 \\
-%1/2 & \sqrt{3}/2 \\
-%-1/2 & \sqrt{3}/2 
-%\end{array}
-%\right]
-%$$. From which we obtain, $U'U = (3/2)I$. Now if $\mu_i$ lies in any other quadrant, all we need to do is rotate the $U$ matrix appropriately with the standard rotation matrix $R_\theta$, which gives, $U_i'U_i = R_\theta U' U R_\theta = (3/2)I$ because $R_\theta R_\theta' = I$. Thusm for any $\mu_i$, $U_i'U_i = (3/2)I$. In the raster case, this has already been discussed in the literature many times, but we can show it in the first quadrant noting that, $$
-%U = \left[ 
-%\begin{array}{cc}
-%1 & 0 \\
-%0 &1 
-%\end{array}
-%\right].
-%$$ Following the same reasoning we obtain $U_i'U_i = I$ for any $\mu_i$.
-%
-%Going back to the original condition 1 check, $$
-%\begin{aligned}
-%\sum_{j\ne i} \left(\frac{\delta_{ij}}{kh/2} + \frac{\sigma^2_i}{kh^2}\right) h u_{ij} &=  2k^{-1}\sum_{j\ne i,\ u_{ij}'\mu_i > 0} (u_{ij}'\mu_i)u_{ij} \\
-%&= 2k^{-1}U_i'U_i\mu_i \\
-%&= \mu_i \text{ if } k = 3 \text{ (hexagon) or } 2 \text{ (raster) }
-%\end{aligned},
-%$$
-%
-%Now, we will proceed to condition (2). $$
-%\begin{aligned}
-%\sum_{j\ne i} q_{ij} h^2 u_{ij}u_{ij}' &= \sum_{j\ne i} \left(\frac{\delta_{ij}}{kh/2} + \frac{\sigma^2_i}{kh^2}\right) h^2 u_{ij}u_{ij}' \\
-%&=  (2h/k)\sum_{j\ne i,\ u_{ij}'\mu_i >0} \delta_{ij}u_{ij}u_{ij}' + (\sigma^2_i/k) \sum_{j\ne i} u_{ij}u_{ij}'\\
-%&= (h/k)\sum_{j\ne i,\ u_{ij}'\mu_i >0} 2\delta_{ij}u_{ij}u_{ij}' + \sigma^2_i I \\
-%&=  \sigma^2_i I + (h/k)M_i.
-%\end{aligned}
-%$$ The fact that $\sum_{j\ne i} u_{ij}u_{ij}' = kI$ can be verified for a given set of neighbors, then a rotation of the coordinates will result in the same calculation. So, the second order property of the CTMC $Y(t)$ are not equal to the SDE $X(t)$, but it does converge in the limit as $h\to 0$, satisfying the condition. The dispersion of $Y(t)$ will be greater than that of $X(t)$ and it will depend on the magnitude and/or direction of the drift vector $\mu_i$ and its location relative to the $u_{ij}$ for which $\delta_{ij} >0$. One can see this by noting that $\sum_{j\ne i} \delta_{ij}u_{ij}u_{ij}'$ is positive semi-definite. $$
-%x'M_ix =  \sum_{j\ne i,\ u_{ij}'\mu_i >0} \delta_{ij} x'u_{ij}u_{ij}'x \ge 0
-%$$ because $u_ij$ are unit vectors the eigen values of $u_{ij}u_{ij}'$ are 1 and 0, thus, $u_{ij}u_{ij}'$ is positive semi-definite and $\delta_{ij} \ge 0$ by definition. For a raster grid, the dispersion of $Y(t)$ has a cleaner form, $M_i$ is a diagonal matrix with the absolute values of $\mu_i$ on the diagonal.
-%
-%There is an alternative formulation of the CTMC rate matrix that will result in exact equivalence. If we simple set $\delta_{ij} = u_{ij}'\mu_i$ rather than taking only the positive elements we can form the CTMC movement rates $$
-%q_{ij} = \left\{
-%\begin{array}{ll}
-%\frac{u_{ij}'\mu_i}{kh} + \frac{\sigma^2_i}{kh^2} & \text{for } i\ne j \text{ and } i \sim j. \\
-%-\sum_{j\ne i} q_{ij} & i = j \\
-%0 & \text{elsewise}
-%\end{array}
-%\right.,
-%$$ where, now $k=2$ and 3 for raster and hexagon grids respectively. When we check condition (1), we still get $$
-%\sum_{i\ne j} q_{ij}hu_{ij} = \mu_i.
-%$$ But now, when we check condition (2), we obtain, $$
-%\sum_{i\ne j} q_{ij}h^2u_{ij}u_{ij}' = \sigma_i^2I.
-%$$ This results because we retain both the positive and negative $u_{ij}'\mu_i$. There will be $k$ pairs of the same value, one positive, one negative. So, this begs the question, why not use this version from the beginning. The problem is that if $\mu_i$ is very large, then for some $j$, $u_{ij}'\mu_i$ might be substantially negative, resulting in a $q_{ij}$ that is negative. In parameter optimization routines if one can constrain the parameters such that $\sigma^2_i/(h|u_{ij}'\mu_i|) > 1$ for all $i,j$, then this approximation would be the best. In theory, this can always be fixed by making $h$ as small as necessary, but that may not be practical if $\mu_i$ dominates $\sigma^2_i$ by a large amount.
-%
-%Using the results so to this point, we can expand the CTMC approximation rate matrix for rasters by using the queen's neighborhood structure and allowing movement to diagonal cells as well. These weights would be $$
-%q_{ij} = \left\{
-%\begin{array}{ll}
-%\frac{\delta_{ij}}{kh/2} + \frac{\sigma^2_i}{kh^2} & \text{for } i\ne j \text{ and cells are rook neighbors} \\
-%\frac{\delta_{ij}}{kh/\sqrt{2}} + \frac{\sigma^2_i}{2kh^2} & \text{for } i\ne j \text{ and cells are queen neighbors} \\
-%-\sum_{j\ne i} q_{ij} & i = j \\
-%0 & \text{elsewise}
-%\end{array}
-%\right.,
-%$$ The specification for queen neighbors is exactly the same we just need to adjust for the fact the distance to the centroid of the diagonal cells is $\sqrt{2}h$ versus $h$ for the NSEW neighbors. In addition, for the queen neighborhood rates we set $k=4$ because there are 4 symmetric movement axes and by using only the positive drift terms we are cutting the number of terms in the sums down by $1/2$. Again, we could use all 8 values of $u_{ij}'\mu_i$ we get exact correspondence between the first and second order properties.
 
 
 \end{spacing}
