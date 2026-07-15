@@ -1,0 +1,170 @@
+\documentclass[12pt]{article}
+
+\usepackage{geometry}
+\usepackage{amsmath,amssymb,amsthm,epsfig,rotfloat,psfrag,natbib,url,graphicx,lineno}
+\usepackage{authblk}
+\usepackage{xcolor}
+\usepackage{setspace}
+\usepackage{mathtools}
+
+\geometry{verbose,letterpaper,tmargin=2.54cm,bmargin=2.54cm,lmargin=2.54cm,rmargin=2.54cm}
+\usepackage{caption}
+\captionsetup{
+  justification = raggedright,
+  singlelinecheck = false
+}
+
+%%%%
+% Some shortcut notation
+%%%%
+\newcommand{\by}{\ensuremath{\mathbf{y}}}
+\newcommand{\bn}{\ensuremath{\mathbf{n}}}
+\newcommand{\bx}{\ensuremath{\mathbf{x}}}
+\newcommand{\bz}{\ensuremath{\mathbf{z}}}
+\newcommand{\bX}{\ensuremath{\mathbf{X}}}
+\newcommand{\bC}{\ensuremath{\mathbf{C}}}
+\newcommand{\bW}{\ensuremath{\mathbf{W}}}
+\newcommand{\bK}{\ensuremath{\mathbf{K}}}
+\newcommand{\bk}{\ensuremath{\mathbf{k}}}
+\newcommand{\bI}{\ensuremath{\mathbf{I}}}
+\newcommand{\bH}{\ensuremath{\mathbf{H}}}
+\newcommand{\bh}{\ensuremath{\mathbf{h}}}
+\newcommand{\bw}{\ensuremath{\mathbf{w}}}
+\newcommand{\bD}{\ensuremath{\mathbf{D}}}
+\newcommand{\bM}{\ensuremath{\mathbf{M}}}
+\newcommand{\bR}{\ensuremath{\mathbf{R}}}
+\newcommand{\bQ}{\ensuremath{\mathbf{Q}}}
+\newcommand{\bu}{\ensuremath{\mathbf{u}}}
+\newcommand{\bs}{\ensuremath{\mathbf{s}}}
+\newcommand{\bp}{\ensuremath{\mathbf{p}}}
+\newcommand{\bP}{\ensuremath{\mathbf{P}}}
+\newcommand{\bV}{\ensuremath{\mathbf{V}}}
+
+\newcommand{\bb}{\ensuremath{\boldsymbol{\beta}}}
+\newcommand{\bg}{\ensuremath{\boldsymbol{\gamma}}}
+\newcommand{\bG}{\ensuremath{\boldsymbol{\Gamma}}}
+\newcommand{\ba}{\ensuremath{\boldsymbol{\alpha}}}
+\newcommand{\be}{\ensuremath{\boldsymbol{\epsilon}}}
+\newcommand{\bSig}{\ensuremath{\boldsymbol{\Sigma}}}
+\newcommand{\bmu}{\ensuremath{\boldsymbol{\mu}}}
+\newcommand{\bd}{\ensuremath{\boldsymbol{\delta}}}
+\newcommand{\bO}{\ensuremath{\boldsymbol{\Omega}}}
+\newcommand{\bsig}{\ensuremath{\boldsymbol{\sigma}}}
+\newcommand{\bo}{\ensuremath{\boldsymbol{\omega}}}
+\newcommand{\bre}{\ensuremath{\boldsymbol{\eta}}}
+\newcommand{\bPsi}{\ensuremath{\boldsymbol{\Psi}}}
+\newcommand{\btau}{\ensuremath{\boldsymbol{\tau}}}
+\newcommand{\bt}{\ensuremath{\boldsymbol{\theta}}}
+\newcommand{\bpi}{\ensuremath{\boldsymbol{\pi}}}
+
+%mathcal
+\newcommand{\fN}{\ensuremath{\mathcal{N}}}
+\newcommand{\fG}{\ensuremath{\mathcal{G}}}
+\newcommand{\fP}{\ensuremath{\mathcal{P}}}
+\newcommand{\fH}{\ensuremath{\mathcal{H}}}
+\newcommand{\fS}{\ensuremath{\mathcal{S}}}
+\newcommand{\fC}{\ensuremath{\mathcal{C}}}
+
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+
+\bibliographystyle{apalike}
+
+\raggedright
+
+\setcounter{section}{0}
+\renewcommand{\thesection}{S\arabic{section}}
+
+\begin{document}
+\begin{spacing}{1.9}
+
+
+%\begin{center}
+\setlength{\parindent}{0pt}
+
+Online Supplement for
+
+{\Large \bf Predicting Animal Space-Use with Continuous-Time Markov Chains}
+
+\bigskip\bigskip
+
+{Devin S. Johnson}$^{1,*}$, Michaela A. Kratofil$^{2,3}$, Janelle J. Gardner$^1$, Robin W. Baird$^3$, and \\ Amanda L. Bradford$^1$ \bigskip
+
+$^1$Pacific Islands Fisheries Science Center, National Marine Fisheries Service, NOAA, Honolulu, Hawaii, USA 
+
+$^2$Marine Mammal Institute, Department of Fisheries, Wildlife, and Conservation Sciences, Oregon State University, Newport, Oregon, USA
+
+$^3$Cascadia Research Collective, Olympia, Washington, USA
+
+$^*$Corresponding author: {\tt devin.johnson@noaa.gov}
+
+
+\bigskip
+
+\today
+
+%\end{center}
+
+%\vspace*{0.15\textheight}
+\vspace*{\fill}
+
+\clearpage
+
+
+%% ABSTRACT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\raggedright
+\setlength{\parindent}{2em}
+\raggedbottom
+\linenumbers
+
+\section{Proof of closed form CTMC limiting distribution}
+
+Using the Metropolis-Hastings (MH) algorithm we can show, by construction, that the limiting distribution of the CTMC we are considering has the limiting distribution stated in Section 3.1. Recall that the limiting distribution of a CTMC is $\bu$ with $i$th element $u_i = \alpha_i/\Lambda_i$ where $\ba$ is the limiting distribution of the embedded chain, $\fG$. So, we can use the theoretical results of the MH algorithm to show that the discrete-time chain, $\fG$, has the appropriate limiting distribution. 
+
+In general, the MH algorithm is designed to sample from a distribution $c^{-1}\pi(x)$ when the proportionality constant is unknown. It accomplishes this feet by constructing a Markov process $q(X_t|X_{t-1})$ to move from state $X_{t-1}$ to $X_t$ such that, asymptotically, $X_t \sim c^{-1}\pi(x)$ as $t\to \infty$. Full details of the MH algorithm can be found in \cite{chib1995understanding}, but the basic version proceeds as follows for desired limiting distribution, $c^{-1}\pi(x)$, \bigskip
+\hrule
+\begin{enumerate}
+\item For current state $X_{t-1} = x$ propose $X_t = x'$ from probability distribution $q(x'|x)$.
+\item With probability 
+\[
+R_t = \min \left\{ \frac{\pi(x')q(x|x')}{\pi(x)q(x'|x)}, 1 \right\}
+\]
+set $X_t = x'$ else, set $X_t = x$. 
+\item Repeat. 
+\end{enumerate}
+\hrule \bigskip
+The acceptance step of the MH algorithm is the key feature the ensures, under certain general regularity conditions, that the distribution of $X_t \sim c^{-1}\pi(x)$ as $t\to \infty$. The Markov process $q(\cdot|\cdot)$ need not necessarily have a limiting distribution, but the acceptance step will produce a chain with limiting distribution $c^{-1}\pi(x)$. If $R_t \ge 1$ for all $t$, then no matter what state is proposed by $q(\cdot|\cdot)$, it is accepted, thus, it is the same as simply drawing a realization of the $q(\cdot|\cdot)$ process. In that case, the limiting distribution of $q(\cdot|\cdot)$ is $c^{-1}\pi(x)$ by construction.
+
+We now return to the CTMC movement model in Section 3.1 to prove the resulting limiting distribution is as stated. Recall the proposed CTMC has movement rate function of the form,
+\[
+\lambda_{ij}(t) = \exp\{\beta_0 + a_i + b_j + c_{ij}\}.
+\]
+The embedded Markov chain, $\fG$, for the CTMC movement process is defined by the transition probabilities \citep{xxx},
+\[
+q(g_m=j|g_{m-1}=i) = \lambda_{ij}/ \Lambda_i \text{ for } i \sim j,
+\]
+where $\Lambda_i = \sum_{j\in\fN_i}\lambda_{ij}$. All we need to do is construct an appropriate $\alpha_i$, $i=1,\dots n$, which is only a function of cell $i$ and no other cell $j$, such that
+\[
+R_m = \frac{\alpha_j\lambda_{ji}\Lambda_i}{\alpha_i\lambda_{ij}\Lambda_j} \ge 1 
+\]
+for all $m>0$ and all $(i,j)$ such that $i$ and $j$ are neighbors. Then, $\ba$ will be the limiting distribution of the embedded chain and we can use the result that the limiting distribution of the full CTMC is $u_i \propto \alpha_i/\Lambda_i$.
+
+We begin be evaluating the MH acceptance ratio for our CTMC model. After canceling like terms in the faction and rearranging advantageously, we obtain,
+\begin{equation}\label{eq:acc.ratio}
+\begin{aligned}
+R_m &= \frac{\exp\{a_j + b_i\}\Lambda_i}{\alpha_i} \times \frac{\alpha_j}{\exp\{a_i + b_j\}\Lambda_j} \times \frac{\exp\{c_{ji}\}}{\exp\{c_{ij}\}} \\
+&= \frac{\exp\{b_i-a_i\}\Lambda_i}{\alpha_i} \times \frac{\alpha_j}{\exp\{b_j-a_j\}\Lambda_j} \times \exp\{c_{ji}-c_{ij}\}\end{aligned}
+\end{equation}
+From this MH acceptance ratio, one can see that a sufficient condition to satisfy $R_m \ge 1$ for all $m = 1,2,\dots$ and all $(i,j)$ such that $i\sim j$ is that $c_{ij}$ is separably symmetric. That is, $c_{ij} = f_i + h_j + w_{ij}$, where $w_{ij} = w_{ji}$. In this case, 
+\begin{equation}
+R_m = \frac{\exp\{-a_i + b_i -f_i + h_i)\}\Lambda_i}{\alpha_i} \times \frac{\alpha_j}{\exp\{-a_j + b_j -f_j + h_j\}\Lambda_j} ,
+\end{equation}
+and $R_m \equiv 1$ for $\alpha_i \propto \exp\{-a_i + b_i -f_i + h_i)\}\Lambda_i$. Placing this in to the embedded Markov chain formula for the limiting distribution of a CTMC we obtain,
+\begin{equation}
+u_i \propto \frac{\alpha_i}{\Lambda_i} = \exp\{-a_i + b_i -f_i + h_i)\}.
+\end{equation}
+
+\bibliography{ctmc_ud}
+
+\end{spacing}
+\end{document}
+
