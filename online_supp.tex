@@ -1,13 +1,25 @@
 \documentclass[12pt]{article}
 
 \usepackage{geometry}
-\usepackage{amsmath,amssymb,amsthm,epsfig,rotfloat,psfrag,natbib,url,graphicx,lineno}
+\usepackage{amsmath,amssymb,amsthm,epsfig,rotfloat,psfrag,url,graphicx,lineno}
 \usepackage{authblk}
 \usepackage{xcolor}
 \usepackage{setspace}
 \usepackage{mathtools}
 
-\geometry{verbose,letterpaper,tmargin=2.54cm,bmargin=2.54cm,lmargin=2.54cm,rmargin=2.54cm}
+\usepackage[authoryear]{natbib}
+% Customizing natbib for ESA Journals (Ecology):
+% Argument 1: Opening parenthesis = (
+% Argument 2: Closing parenthesis = )
+% Argument 3: Separation between multiple citations = ;
+% Argument 4: 'a' for author-year style
+% Argument 5: Punctuation between author and year (none, just a space)
+% Argument 6: Punctuation between years for same author = ,
+\bibpunct{(}{)}{;}{a}{}{,}
+\bibliographystyle{apalike}
+
+
+\geometry{verbose,letterpaper,tmargin=1in,bmargin=1in,lmargin=1in,rmargin=1in}
 \usepackage{caption}
 \captionsetup{
   justification = raggedright,
@@ -67,7 +79,6 @@
 
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
 
-\bibliographystyle{apalike}
 
 \raggedright
 
