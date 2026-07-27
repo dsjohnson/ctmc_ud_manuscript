@@ -2,9 +2,21 @@
 
 \usepackage{geometry}
 \usepackage{
-hyperref,amsmath,amssymb,amsthm,epsfig,rotfloat,psfrag,natbib,url,graphicx,lineno,authblk,
+hyperref,amsmath,amssymb,amsthm,epsfig,rotfloat,psfrag,url,graphicx,lineno,authblk,
 xcolor,setspace,mathtools, caption
 }
+
+\usepackage[authoryear]{natbib}
+
+% Customizing natbib for ESA Journals (Ecology):
+% Argument 1: Opening parenthesis = (
+% Argument 2: Closing parenthesis = )
+% Argument 3: Separation between multiple citations = ;
+% Argument 4: 'a' for author-year style
+% Argument 5: Punctuation between author and year (none, just a space)
+% Argument 6: Punctuation between years for same author = ,
+\bibpunct{(}{)}{;}{a}{}{,}
+\bibliographystyle{apalike}
 
 \geometry{verbose,letterpaper,tmargin=1in,bmargin=1in,lmargin=1in,rmargin=1in}
 
@@ -12,6 +24,7 @@ xcolor,setspace,mathtools, caption
   justification = raggedright,
   singlelinecheck = false
 }
+
 
 %%%%
 % Some shortcut notation
@@ -68,7 +81,6 @@ xcolor,setspace,mathtools, caption
 
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
 
-\bibliographystyle{apalike}
 
 \raggedright
 
@@ -109,7 +121,7 @@ $^*$Corresponding author: {\tt devin.johnson@noaa.gov}
 
 \end{center}
 
-
+\clearpage
 
 
 
@@ -139,7 +151,7 @@ Any quick literature search will reveal that remote collection and analysis of a
 \end{equation} 
 where $\bu(\bs)$ is the UD at location $\bs$ and $\bx(\bs)$ are habitat covariates at location $\bs$. Inference for parametric spatial UDs from temporally correlated telemetry data can be challenging \citep{Johnson:2013fk}. Estimates that ignore the temporal aspect can suffer from start-bias \citep{whitehead2013inferring, calabrese2016ctmm} if the individual does not have a long enough deployment to fully explore its home range. Also, treating locations as independent will underestimate uncertainty in $\bb$ inference \citep{Alston:2023aa}.  
 
-To account for autocorrelated telemetry data predictive UDs have been proposed. Predictive UDs are derived by fitting an autocorrelated movement model to the telemetry data the stationary distribution of the movement model is treated as the UD. Predictive UDs can help eliminate start bias because they predict where the individual will be in the long-run \citep{whitehead2013inferring} and the estimated parameters are estimated by explicitly modeling autocorrelation which avoids the predicament of underestimation of parameter uncertainty by treating the data as independent. \cite{Barnett:2008wj} and \cite{moorcroft1999home} considered mechanistic stochastic differential equation (SDE) movement models but the resulting UD was time consuming to numerically assess. This same approach was also used to scale step-selection models to the resulting UD \citep{potts2022scale}. Langevin diffusions were recently proposed as an alternative SDE model because they have a log-linear form (\ref{eq:exp.form}) stationary distribution \citep{michelot2018langevin}. However, only continuously valued habitat variables could be used. Moreover, a 2-stage imputation procedure \citep{ScharfEtAl2017a} is necessary for approximate inference unless the telemetry data is sufficiently fine scale. Also, in study areas with complex barriers to movement, such as coastal marine environments, the imputation approach can become challenging to implement. 
+To account for autocorrelated telemetry data predictive UDs have been proposed. Predictive UDs are derived by fitting an autocorrelated movement model to the telemetry data the stationary distribution of the movement model is treated as the UD. Predictive UDs can help eliminate start bias because they predict where the individual will be in the long-run \citep{whitehead2013inferring} and the estimated parameters are estimated by explicitly modeling autocorrelation which avoids the predicament of underestimation of parameter uncertainty by treating the data as independent. \cite{Barnett:2008wj} and \cite{moorcroft1999home} considered mechanistic stochastic differential equation (SDE) movement models but the resulting UD was time consuming to numerically assess. This same approach was also used to scale step-selection models to the resulting UD \citep{PottsBorger2023a}. Langevin diffusions were recently proposed as an alternative SDE model because they have a log-linear form (\ref{eq:exp.form}) stationary distribution \citep{michelot2018langevin}. However, only continuously valued habitat variables could be used. Moreover, a 2-stage imputation procedure \citep{ScharfEtAl2017a} is necessary for approximate inference unless the telemetry data is sufficiently fine scale. Also, in study areas with complex barriers to movement, such as coastal marine environments, the imputation approach can become challenging to implement. 
 
 Continuous-time Markov chain (CTMC) movement models have become another type of movement model that can easily incorporate habitat variables to describe movement. We provide a brief description here, but more technical details can be found in \citep{norris1998markov}. In a CTMC movement model the geographical study domain is partitioned into cells or other discrete locations indexed by $\fC = \{1,\dots,n\}$ (See Figure 1B-E). Each cell, $i$, has a set of neighboring cells $\fN_i = \{j\in \fC: i \sim j\}$, where $i\sim j$ means that an animal can go from cell $i$ to cell $j$ in one move. For example, in a raster partition, neighboring cells might share a border (rook neighborhood) or a corner point(queen neighborhood). CTMC models are defined by the conditional movement rates between cells, $\lambda_{ij} \ge 0$. The total rate of movement away from cell $i$ is $\Lambda_i = \sum_{j\in\fN_i} \lambda_{ij}$. After an individual enters cell $i$ it will reside there an exponential, mean $\Lambda_i^{-1}$, amount of time, then transition to a neighboring cell with probability $P_{ij}=\lambda_{ij}/\Lambda_i$. Two important benefits of CTMC models over SDEs is that categorical habitat variables can be used and CTMCs can be formulated as large sparse hidden Markov models (HMMs) so that efficient evaluation of the exact likelihood is possible. Although to this point most analyses of satellite location telemetry data with CTMCs have also relied on imputation, for example, \cite{Hanks:2015aa, wilsonestimating, Johnson353516}, but see \cite{pedersen2011estimating} for an archival tag CTMC HMM. One additional benefit of CTMCs relative to SDEs is that complex barriers can be easily accounted for simply by the definition of the cell partitions \citep{wilsonestimating}, that is, for a cell $j$ where the animal cannot travel, $\lambda_{ij}\equiv0$ for all $i \in \fN_j$. Or, in other words $j \notin \fC$. If all the rates are placed in an $n \times n$ matrix $\bQ$ with $(-\Lambda_1,\dots,-\Lambda_n)$ on the diagonal and $\lambda_{ij}$ in the $i$th row, $j$th column then one can also represent a CTMC as the discrete-space SDE,
 \[
@@ -248,7 +260,7 @@ The official management range of the MHI stock of FKW was documented in \cite{Br
 
 We used two modeled global oceanographic variables from E.U. Copernicus Marine Service: (1) Sea Surface Temperature (SST; $^\circ$C; DOI: \url{https://doi.org/10.48670/moi-00016}) and (2) Sea Level Anomaly (SLA; m; DOI: \url{https://doi.org/10.48670/moi-00148}) to model movement and space-use. SST is available at $0.082^\circ$ resolution and SLA is available at $0.125^\circ$ degree resolution. In order to match resolution we chose to project the SLA raster to the resolution of the SST raster to avoid losing oceanographic information. Because we are using these variables to predict long term space-use, we used a single layer for each variable that was the 2 year daily average in the study area. This allowed us to model movement with respect to typical oceanographic conditions (Figure 1B-C). 
 
-In addition to the oceanographic variables, we used distance from land (m) to model FKW's resident nature in the MHI. Also, we constructed a depth residual variable by using data from the global, 30 arc-second ETOPO elevation model \citep{etopo2022} and removing the linear trend of distance from land. The distance and depth variables were projected to the $0.082^\circ$ SST resolution as well. Then all data, including telemetry data, were projected to the Hawaii Albers Equal Area projection, ESRI:102007 (Figure 1D-E) 
+In addition to the oceanographic variables, we used distance from land (m) to model FKW's resident nature in the MHI. Also, we constructed a depth residual variable by using data from the global, 30 arc-second ETOPO elevation model \citep{etopo2022a} and removing the linear trend of distance from land. The distance and depth variables were projected to the $0.082^\circ$ SST resolution as well. Then all data, including telemetry data, were projected to the Hawaii Albers Equal Area projection, ESRI:102007 (Figure 1D-E) 
 
 \subsection{CTMC model and hierarchical inference \label{sec.fkw.model}}
 
