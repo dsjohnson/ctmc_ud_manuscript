@@ -1,7 +1,7 @@
 \documentclass[12pt]{article}
 
 \usepackage{geometry}
-\usepackage{amsmath,amssymb,amsthm,epsfig,rotfloat,psfrag,url,graphicx,lineno}
+\usepackage{amsmath,amssymb,amsthm,epsfig,rotfloat,psfrag,url,graphicx,lineno,booktabs, rotating, makecell}
 \usepackage{authblk}
 \usepackage{xcolor}
 \usepackage{setspace}
@@ -179,9 +179,11 @@ From this MH acceptance ratio, one can see that a sufficient condition to satisf
 u_i \propto \frac{\pi_i}{\Lambda_i} = \exp\{-a_i + b_i + 2c_i\}.
 \end{equation}
 
+
 \clearpage
 
-\section*{Supplementary Figures}
+
+\section*{Supplementary Tables and Figures}
 
 \begin{figure}[h]
 \begin{center}
@@ -192,6 +194,30 @@ u_i \propto \frac{\pi_i}{\Lambda_i} = \exp\{-a_i + b_i + 2c_i\}.
 
 \clearpage
 
+\begin{sidewaystable}[htbp]
+\centering
+\caption{Tagging information and satellite deployment details.}
+\label{tab:pctag_info}
+\begin{tabular}{llllllll}
+\toprule
+\thead{Tag ID} & \thead{Catalog ID} & \thead{Age class at tagging} & \thead{Sex} & \thead{Social cluster\\membership} & \thead{Tag type} & \thead{Deployment\\date (UTC)} & \thead{Duration\\(days)} \\
+\midrule
+PcTag066 & HIPc0202 & Adult & Male    & Cluster 1 & SPOT6      & 2020-06-22 & 28.4 \\
+PcTag067 & HIPc0159 & Adult & Female  & Cluster 3 & SPOT6      & 2020-09-29 & 81.1 \\
+PcTag070 & HIPc0149 & Adult & Male    & Cluster 2 & SPOT6      & 2020-12-07 & 42.5 \\
+PcTag071 & HIPc0711 & Adult & Female  & Cluster 4 & SPOT6      & 2020-12-12 & 39.8 \\
+PcTag074 & HIPc0364 & Adult & Unknown & Cluster 3 & SPLASH10-F & 2021-08-08 & 12.0 \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{\textheight}
+\vspace{1ex}
+\footnotesize
+\textit{Note:} For information on social cluster membership, see Mahaffy et al. (2023). Sex was genetically determined (via biopsy sample) for all individuals except HIPc0364. Transmission durations are rounded to one decimal place.
+\end{minipage}
+\end{sidewaystable}
+
+\clearpage
+
 \begin{figure}
 \begin{center}
 \includegraphics[width=0.8\textwidth]{figures/ifit_fig.png}
@@ -199,7 +225,6 @@ u_i \propto \frac{\pi_i}{\Lambda_i} = \exp\{-a_i + b_i + 2c_i\}.
 \end{center}
 \end{figure}
 
-\clearpage
 
 \bibliography{ctmc_ud}
 
