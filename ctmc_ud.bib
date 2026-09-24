@@ -211,6 +211,23 @@
   file = {/Users/devin.johnson/Zotero/storage/6NFVA272/Understanding the metropolis-hastings algorithm.pdf}
 }
 
+@misc{DelporteEtAl2026a,
+  title = {Spatial Constraints Improve Filtering of Measurement Noise from Animal Tracks},
+  author = {Delporte, Alexandre and Ditlevsen, Susanne and Samson, Adeline},
+  year = 2026,
+  month = may,
+  number = {arXiv:2511.22430},
+  eprint = {2511.22430},
+  primaryclass = {stat.AP},
+  publisher = {arXiv},
+  doi = {10.48550/arXiv.2511.22430},
+  urldate = {2026-09-09},
+  abstract = {Advances in tracking technologies for animal movement require new statistical tools to better exploit the increasing amount of data. Animal positions are usually calculated using the GPS or Argos satellite system and include potentially non-Gaussian and heavy-tailed measurement error patterns. Errors are usually handled through a Kalman filter algorithm, which can be sensitive to non-Gaussian error distributions. We introduce a latent movement model through an underdamped Langevin stochastic differential equation (SDE) that includes an additional drift term to ensure that the animal remains in a known spatial domain of interest. This can be applied to aquatic animals moving in water or terrestrial animals moving in a restricted zone delimited by fences or natural barriers. We demonstrate that the incorporation of these spatial constraints into the latent movement model can improve the accuracy of filtering for noisy observations of the positions. We implement an Extended Kalman Filter as well as a particle filter adapted to non-Gaussian error distributions. Our filters are based on solving the SDE through splitting schemes to approximate the latent dynamic. We illustrate the approach on a real Argos telemetry track of a bowhead whale in Foxe Basin, Canada.},
+  archiveprefix = {arXiv},
+  keywords = {Statistics - Applications},
+  file = {/Users/devin.johnson/Zotero/storage/LS8I72Q6/Delporte et al. - 2026 - Spatial constraints improve filtering of measureme.pdf;/Users/devin.johnson/Zotero/storage/M6DZU27U/2511.html}
+}
+
 @article{douglas2012moderating,
   title = {Moderating {{A}} Rgos Location Errors in Animal Tracking Data},
   author = {Douglas, David C and Weinzierl, Rolf and C. Davidson, Sarah and Kays, Roland and Wikelski, Martin and Bohrer, Gil},
@@ -236,6 +253,24 @@
   date-added = {2014-11-17 22:53:13 +0000},
   date-modified = {2014-11-17 22:53:35 +0000},
   file = {/Users/devin.johnson/Zotero/storage/6ZRPPHB5/The accuracy of Fastloc-GPS locations and implications for animal.pdf}
+}
+
+@misc{DupontEtAl2026a,
+  title = {Inferring Resource Selection and Utilization Distributions from Irregular and Error-Prone Animal Tracking Data},
+  author = {Dupont, Fanny and McClintock, Brett T. and Fischer, Jan-Ole and Marcoux, Marianne and Hussey, Nigel E. and {Auger-M{\'e}th{\'e}}, Marie},
+  year = 2026,
+  month = jul,
+  number = {arXiv:2606.12566},
+  eprint = {2606.12566},
+  primaryclass = {stat.ME},
+  publisher = {arXiv},
+  doi = {10.48550/arXiv.2606.12566},
+  urldate = {2026-09-09},
+  abstract = {Habitat selection and space use are fundamental to understanding animal distribution. Traditional methods for quantifying habitat preferences from telemetry data assume regular sampling and negligible measurement error. However, these assumptions are routinely violated in marine systems. Practitioners typically regularize and filter the data before fitting models, but these two-step procedures do not propagate uncertainty from the filtering stage and can yield biased estimates. Habitat-driven Langevin diffusion models offer an elegant alternative, naturally accommodating irregular sampling. However, incorporating measurement error via a state-space formulation is challenging because habitat covariates depend on the latent true locations. We address this using the Laplace approximation to simultaneously integrate over true locations and account for habitat covariates along latent paths, yielding a single-stage framework efficiently implemented in Template Model Builder (TMB). By doing so, we provide the first TMB implementation capable of handling covariates that depend on latent variables, allowing inference via fast and efficient maximum likelihood estimation. Simulations show that our approach outperforms the two-step method, recovering habitat-selection parameters even under substantial measurement error and missing data, with more accurate utilization distributions and trajectory reconstructions. Applied to narwhal (Monodon monoceros) telemetry data, the two-step method substantially shrinks the habitat selection coefficient towards zero, while our unified approach recovers a much stronger signal. Our framework offers a computationally efficient solution to long-standing challenges of measurement error and temporal irregularity in habitat selection inference, applicable across a wide range of taxa and environments.},
+  archiveprefix = {arXiv},
+  keywords = {Statistics - Methodology},
+  note = {Comment: 29 pages},
+  file = {/Users/devin.johnson/Zotero/storage/RN3BPNPS/Dupont et al. - 2026 - Inferring resource selection and utilization distr.pdf;/Users/devin.johnson/Zotero/storage/7M68XVWM/2606.html}
 }
 
 @misc{etopo2022a,
