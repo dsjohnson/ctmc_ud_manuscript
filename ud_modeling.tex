@@ -122,7 +122,6 @@ $^*$Corresponding author: {\tt devin.johnson@noaa.gov}
 
 \end{center}
 
-\clearpage
 
 
 
@@ -136,12 +135,8 @@ $^*$Corresponding author: {\tt devin.johnson@noaa.gov}
 \noindent {\bf Abstract.}
 Remote animal telemetry data is widely used in ecology to assess animal space-use and evaluate utilization distributions (UDs). However, traditional empirical UDs (like kernel density or Brownian bridge estimators) can suffer from ``start bias'' if tag deployments are too short for an animal to fully explore its habitat, heavily biasing results toward the initial release location. Recently, predictive UDs have been proposed in an attempt to mitigate this by finding the long-run stationary distribution of a stochastic process that uses habitat covariates to describe movement. This stationary distribution is not directly dependent on starting location because it uses habitat variables to predict space-use in the future based on short term movements. Predictive UDs have been calculated from Langevin diffusions as well as general continuous-time Markov chain models (CTMC). While log-linear closed form UD calculations are possible for Langevin models with coefficients directly relating habitat to space-use, CTMC UDs have only been calculated numerically without parameters relating directly habitat to use. Here we present a general class of CTMC models and show they have a closed form log-linear predictive UD. CTMCs have several benefits over Langevin models: (1) the exact likelihood can be used without approximation, (2) both categorical and continuous habitat variables can be used, and (3) fixed barriers to movement (e.g., land in marine settings) are automatically accounted for as part of the model. We developed the R package {\tt walk} for fitting these models in practice and it is used to demonstrate explicit UD estimation from CTMC models with a data set of Hawaiian false killer whales (\emph{Pseudorca crassidens}). We also illustrate a 2-stage meta-analysis method for population inference from individual UDs.  
 
-
- \bigskip
-
 \noindent {\bf Key words}: Hidden Markov model, resource selection, Stationary distribution, Satellite telemetry, Utilization distribution
 
-% \clearpage
 
 \section{Introduction}
 
