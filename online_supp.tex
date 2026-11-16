@@ -101,7 +101,7 @@
 
 \begin{center}
 
-{\Large \bf Online Supplement} \bigskip
+{\Large \bf Supplementary Material} \bigskip
 
 {\large Predicting Space-Use with Continuous-Time Markov Chain Movement Models}
 
@@ -109,15 +109,15 @@
 
 \begin{minipage}{0.75\textwidth}
 \begin{center}
-{Devin S. Johnson}$^{1,*}$, Michaela A. Kratofil$^{2,3}$, Brett T. McClintock$^4$, Janelle J. Gardner$^1$, Robin W. Baird$^3$, and Amanda L. Bradford$^1$ \bigskip
+{Devin S. Johnson}$^{1,*}$, Brett T. McClintock$^2$, Michaela A. Kratofil$^{3,4}$, Janelle J. Gardner$^1$, Robin W. Baird$^4$, and Amanda L. Bradford$^1$ \bigskip
 
 $^1$Pacific Islands Fisheries Science Center, National Marine Fisheries Service, NOAA, Honolulu, Hawaii, USA 
 
-$^2$Marine Mammal Institute, Department of Fisheries, Wildlife, and Conservation Sciences, Oregon State University, Newport, Oregon, USA
+$^2$Alaska Fisheries Science Center, National Marine Fisheries Service, NOAA, Seattle, Washington, USA 
 
-$^3$Cascadia Research Collective, Olympia, Washington, USA
+$^3$Marine Mammal Institute, Department of Fisheries, Wildlife, and Conservation Sciences, Oregon State University, Newport, Oregon, USA
 
-$^4$Alaska Fisheries Science Center, National Marine Fisheries Service, NOAA, Seattle, Washington, USA 
+$^4$Cascadia Research Collective, Olympia, Washington, USA
 
 
 $^*$Corresponding author: {\tt devin.johnson@noaa.gov}
@@ -149,7 +149,7 @@ $^*$Corresponding author: {\tt devin.johnson@noaa.gov}
 
 Using the Metropolis-Hastings (MH) algorithm we can show, by construction, that the limiting distribution of the CTMC we are considering has the limiting distribution stated in Section 3.1. Recall that the limiting distribution of a CTMC is $\bu$ with $i$th element $u_i = \pi_i/\Lambda_i$ where $\bpi$ is the limiting distribution of the embedded chain, $\fG$. So, we can use the theoretical results of the MH algorithm to show that the discrete-time chain, $\fG$, has the appropriate limiting distribution. 
 
-In general, the MH algorithm is designed to sample from a distribution $c^{-1}\pi(x)$ when the proportionality constant is unknown. It accomplishes this feet by constructing a Markov process $q(X_t|X_{t-1})$ to move from state $X_{t-1}$ to $X_t$ such that, asymptotically, $X_t \sim c^{-1}\pi(x)$ as $t\to \infty$. Full details of the MH algorithm can be found in \cite{chib1995understanding}, but the basic version proceeds as follows for desired limiting distribution, $c^{-1}\pi(x)$, \bigskip
+In general, the MH algorithm is designed to sample from a distribution $c^{-1}\pi(x)$ when the proportionality constant is unknown. It accomplishes this feat by constructing a Markov process $q(X_t|X_{t-1})$ to move from state $X_{t-1}$ to $X_t$ such that, asymptotically, $X_t \sim c^{-1}\pi(x)$ as $t\to \infty$. Full details of the MH algorithm can be found in \cite{chib1995understanding}, but the basic version proceeds as follows for desired limiting distribution, $c^{-1}\pi(x)$, \bigskip
 \hrule
 \begin{enumerate}
 \item For current state $X_{t-1} = x$ propose $X_t = x'$ from probability distribution $q(x'|x)$.
@@ -161,11 +161,11 @@ set $X_t = x'$ else, set $X_t = x$.
 \item Repeat. 
 \end{enumerate}
 \hrule \bigskip
-The acceptance step of the MH algorithm is the key feature the ensures, under certain general regularity conditions, that the distribution of $X_t \sim c^{-1}\pi(x)$ as $t\to \infty$. The Markov process $q(\cdot|\cdot)$ need not necessarily have a limiting distribution, but the acceptance step will produce a chain with limiting distribution $c^{-1}\pi(x)$. If $R_t \ge 1$ for all $t$, then no matter what state is proposed by $q(\cdot|\cdot)$, it is accepted, thus, it is the same as simply drawing a realization of the $q(\cdot|\cdot)$ process. In that case, the limiting distribution of $q(\cdot|\cdot)$ is $c^{-1}\pi(x)$ by construction.
+The acceptance step of the MH algorithm is the key feature that ensures, under certain general regularity conditions, that the distribution of $X_t \sim c^{-1}\pi(x)$ as $t\to \infty$. The Markov process $q(\cdot|\cdot)$ need not necessarily have a limiting distribution, but the acceptance step will produce a chain with limiting distribution $c^{-1}\pi(x)$. If $R_t \ge 1$ for all $t$, then no matter what state is proposed by $q(\cdot|\cdot)$, it is accepted, thus, it is the same as simply drawing a realization of the $q(\cdot|\cdot)$ process. In that case, the limiting distribution of $q(\cdot|\cdot)$ is $c^{-1}\pi(x)$ by construction.
 
 We now return to the explicit UD CTMC model proposed in the paper to prove the resulting limiting distribution is as stated. Recall the proposed CTMC has movement rate function of the form,
 \[
-\lambda_{ij}(t) = \exp\{a_i + b_j + (c_{j}-c_i) + d_{ij}\}.
+\lambda_{ij}(t) = \exp\{a_i + b_j + \frac{1}{2}(c_{j}-c_i) + d_{ij}\}.
 \]
 The embedded Markov chain, $X_1,X_2,\dots$, for the CTMC movement process is defined by the transition probabilities 
 \[
@@ -179,11 +179,11 @@ for all $m>0$ and all $(i,j)$ such that $i$ and $j$ are neighbors. Then, $\bpi$ 
 
 We begin be evaluating the MH acceptance ratio for our CTMC model. After canceling like terms in the faction and rearranging advantageously, we obtain,
 \begin{equation}\label{eq:acc.ratio}
-R_m = \frac{\exp\{-a_i + b_i + 2c_i\}\Lambda_i}{\pi_i} \times \frac{\pi_j}{\exp\{-a_j + b_j + 2c_j\}\Lambda_j} \times \exp\{d_{ji}-d_{ij}\} 
+R_m = \frac{\exp\{-a_i + b_i + c_i\}\Lambda_i}{\pi_i} \times \frac{\pi_j}{\exp\{-a_j + b_j + c_j\}\Lambda_j} \times \exp\{d_{ji}-d_{ij}\} 
 \end{equation}
-From this MH acceptance ratio, one can see that a sufficient condition to satisfy $R_m = 1$ for all $m = 1,2,\dots$ and all $(i,j)$ such that $i\sim j$ is that $d_{ij}$ is symmetric. That is, $d_{ij} = d_{ji}$. Then, $R_m \equiv 1$ for $\pi_i \propto \exp\{-a_i + b_i + 2c_i\}\Lambda_i$. Placing this in to the embedded Markov chain formula for the limiting distribution of a CTMC we obtain,
+From this MH acceptance ratio, one can see that a sufficient condition to satisfy $R_m = 1$ for all $m = 1,2,\dots$ and all $(i,j)$ such that $i\sim j$ is that $d_{ij}$ is symmetric. That is, $d_{ij} = d_{ji}$. Then, $R_m \equiv 1$ for $\pi_i \propto \exp\{-a_i + b_i + c_i\}\Lambda_i$. Placing this in to the embedded Markov chain formula for the limiting distribution of a CTMC we obtain,
 \begin{equation}
-u_i \propto \frac{\pi_i}{\Lambda_i} = \exp\{-a_i + b_i + 2c_i\}.
+u_i \propto \frac{\pi_i}{\Lambda_i} = \exp\{-a_i + b_i + c_i\}.
 \end{equation}
 
 

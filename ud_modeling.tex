@@ -102,15 +102,16 @@ xcolor,setspace,mathtools, caption
 
 \begin{minipage}{0.8\textwidth}
 \begin{center}
-{Devin S. Johnson}$^{1,*}$, Michaela A. Kratofil$^{2,3}$, Brett T. McClintock$^4$, Janelle J. Gardner$^1$, Robin W. Baird$^3$, and Amanda L. Bradford$^1$ \bigskip
+{Devin S. Johnson}$^{1,*}$, Brett T. McClintock$^2$, Michaela A. Kratofil$^{3,4}$, Janelle J. Gardner$^1$, Robin W. Baird$^4$, and Amanda L. Bradford$^1$ \bigskip
 
 $^1$Pacific Islands Fisheries Science Center, National Marine Fisheries Service, NOAA, Honolulu, Hawaii, USA 
 
-$^2$Marine Mammal Institute, Department of Fisheries, Wildlife, and Conservation Sciences, Oregon State University, Newport, Oregon, USA
+$^2$Alaska Fisheries Science Center, National Marine Fisheries Service, NOAA, Seattle, Washington, USA 
 
-$^3$Cascadia Research Collective, Olympia, Washington, USA
 
-$^4$Alaska Fisheries Science Center, National Marine Fisheries Service, NOAA, Seattle, Washington, USA 
+$^3$Marine Mammal Institute, Department of Fisheries, Wildlife, and Conservation Sciences, Oregon State University, Newport, Oregon, USA
+
+$^4$Cascadia Research Collective, Olympia, Washington, USA
 
 $^*$Corresponding author: {\tt devin.johnson@noaa.gov}
 \end{center}
@@ -167,7 +168,7 @@ In order to blend the benefits of the CTMC based movement model with the closed-
 General CTMCs do not have closed-form stationary distributions, however, we consider a class of CTMC useful for animal movement modeling for which we can directly evaluate the stationary distribution. The movement rates of this class have the form, 
 \begin{equation}
 \label{eq:rate}
-\log(\lambda_{ij}) = \bx_{1i}'\ba + \bx_{2j}'\bd + (\bx_{3j}-\bx_{3i})'\bg + \bx_{4ij}'\bn,
+\log(\lambda_{ij}) = \bx_{1i}'\ba + \bx_{2j}'\bd + \frac{1}{2}(\bx_{3j}-\bx_{3i})'\bg + \bx_{4ij}'\bn,
 \end{equation}
 where $\bx_{1i}$ is a set of habitat covariates recorded in the current cell $i$, $\bx_{2j}$ are other covariates recorded in cell $j \in \fN_i$, $\bx_{3j}-\bx_{3i}$ are local differences of a third set of habitat covariates, and $\bx_{4ij}$ are symmetric pair specific covariates ($\bx_{4ij}=\bx_{4ji}$) such as, say, distance between $i$ and $j$. The covariates in $\bx_1$ only control residence time and do not affect which cell an individual might choose upon moving. The variables in $\bx_2$ primarily function to specify preference for neighboring cells based on the magnitude of the covariates in the neighboring cells, while the variables included via local differences, $\bx_3$, control movement based on relative habitat differences, similar to habitat gradient effects in Langenvin diffusions. Now that we have a defined class of CTMC movement models we can evaluate the stationary utilization distribution that results from this CTMC diffusion. The symmetric covariates, $\bx_{4ij}$, can be included to add effects such as distance between cells. For example, in a queen neighborhood structure the diagonal cells are slightly farther (by a factor of $\sqrt{2}$) from the resident cells than the non-diagonal neighbors. 
 
@@ -186,15 +187,15 @@ We can use Markov Chain Monte Carlo (MCMC) theoretical results to show that a CT
 \[
 \pi_iP_{ij} = \pi_jP_{ji},
 \]
-for all $i$ and $j$ in $\fC$ \citep{Blackwell2026a}. By inserting $P_{ij}$ and $P_{ji}$ into the equation, one can check that it is satisfied for $\pi_i \propto \exp(-\bx_{1i}'\alpha + \bx_{2i}'\bd + 2\bx_{3i}'\bg)\Lambda_i$ (See online supplement S1). This implies, using (\ref{eq:embed.u}), the stationary UD for the full CTMC model is, 
+for all $i$ and $j$ in $\fC$ \citep{Blackwell2026a}. By inserting $P_{ij}$ and $P_{ji}$ into the equation, one can check that it is satisfied for $\pi_i \propto \exp(-\bx_{1i}'\alpha + \bx_{2i}'\bd + \bx_{3i}'\bg)\Lambda_i$ (See online supplement S1). This implies, using (\ref{eq:embed.u}), the stationary UD for the full CTMC model is, 
 \begin{equation}
 \label{eq:u.exp}
 \begin{aligned}
-u_i &\propto \exp(-\bx_{1i}'\ba + \bx_{2i}'\bd + 2\bx_{3i}'\bg)\\
+u_i &\propto \exp(-\bx_{1i}'\ba + \bx_{2i}'\bd + \bx_{3i}'\bg)\\
 &= \exp(\bx_i'\bb),
 \end{aligned}
 \end{equation}
-where $\bx_i = (\bx_{1i}', \bx_{2i}', \bx_{3i}')'$ and $\bb = (-\ba',\bd', 2\bg')'$. Thus, the utilization distribution for the proposed class of CTMC movement models has the desired closed log-linear form (\ref{eq:exp.form}). 
+where $\bx_i = (\bx_{1i}', \bx_{2i}', \bx_{3i}')'$ and $\bb = (-\ba',\bd', \bg')'$. Thus, the utilization distribution for the proposed class of CTMC movement models has the desired closed log-linear form (\ref{eq:exp.form}). 
   
 \subsection{Parameter Estimation}
 
@@ -221,7 +222,7 @@ where $\bu_1$ is the location probability distribution at $t_1$, $\bP(\by_k) = \
 In addition to the matrix exponential evaluation numerical savings, another optional approach to save computational effort is to set a censoring value for the maximum $\Lambda_i$ value. The numerical methods of \cite{sherlock2021direct} require more matrix operations for higher values of $\max(\Lambda_i)$. For some cells, the log linear $\lambda_{ij}$ model may produce rates of movement that are unrealistically high in some parts of the study area. With respect to UDs this would imply that an individual will not remain in that cell and the $u_i \approx 0$. \cite{Hewitt:2023aa} considered a logit rate model that restricts this behavior, but that model does not allow us to construct a CTMC with an explicit stationary distribution. So, we propose picking a censoring value, say, $\Lambda^*$ and setting $\lambda_{ij}^* = (\Lambda^*/\Lambda_i)\lambda_{ij}$
 if $\Lambda_i > \Lambda^*$. If $\Lambda^*$ is sufficiently large, this will have negligible impact on $\bu$ estimation but can dramatically help likelihood computation. One reasonable way to choose $\Lambda^*$ is to select the minimum amount of time that an animal would likely reside in a cell, say $r^*$, then set $\Lambda^* = 1/r^*$. This implies that the expected residency time $\ge r^*$. for all cells. The effect on $\bu$ can be verified by comparing the exact, numerically calculated $\bu$ from the censored rate model \citep{wilsonestimating} to $u_i \propto \exp(\bx_i'\bb)$. If discrepancies are sufficiently large, $\Lambda^*$ can be increased until the discrepancy is within tolerance. In the resulting model, if $\max(\Lambda_i) \le \Lambda^*$ the UDs are identical. 
 
-Once the CTMC movement model has been fitted, the maximum likelihood estimate, $\hat{\bb}_\text{CTMC}= (\hat{\ba}', \hat{\bd}', \hat{\bg}')'$, needs to be transformed to the UD coefficients via $\hat{\bb} = \bM \hat{\bb}_\text{CTMC}$ and $\bM = \text{diag}((-\mathbf{1}_\alpha', \mathbf{1}_\delta', 2\mathbf{1}_\gamma')')$. Thus, the large sample covariance matrix of the UD coefficients is $\hat{\mathbf{S}} = \bM \hat{\mathbf{S}}_\text{CTMC} \bM$, where $\hat{\mathbf{S}}_\text{CTMC}$ is the Hessian-derived large sample covariance matrix of $\hat{\bb}_\text{CTMC}$. Then the UD estimate is $\hat{u_i} = \exp(\bx_i' \hat{\bb})/\sum_{j=1}^n \exp(\bx_j' \hat{\bb})$. If only the standard errors are desired, one can simply multiply the CTMC coefficient standard errors by the multipliers, but if the entire covariance matrix is desired matrix multiplication is necessary. Variance of the fitted UD can be estimated via a simple Monte Carlo approach of drawing iterations, $\bb^{(r)} \sim N(\hat{\bb}, \hat{\mathbf{S}})$ then calculating $\bu^{(r)}$. After several draws $Var(\hat{\bu})$ can be estimated as the sample variance of the $\bu^{(r)}$.
+Once the CTMC movement model has been fitted, the maximum likelihood estimate, $\hat{\bb}_\text{CTMC}= (\hat{\ba}', \hat{\bd}', \hat{\bg}')'$, needs to be transformed to the UD coefficients via $\hat{\bb} = \bM \hat{\bb}_\text{CTMC}$ and $\bM = \text{diag}((-\mathbf{1}_\alpha', \mathbf{1}_\delta', \mathbf{1}_\gamma')')$. Thus, the large sample covariance matrix of the UD coefficients is $\hat{\mathbf{S}} = \bM \hat{\mathbf{S}}_\text{CTMC} \bM$, where $\hat{\mathbf{S}}_\text{CTMC}$ is the Hessian-derived large sample covariance matrix of $\hat{\bb}_\text{CTMC}$. Then the UD estimate is $\hat{u_i} = \exp(\bx_i' \hat{\bb})/\sum_{j=1}^n \exp(\bx_j' \hat{\bb})$. If only the standard errors are desired, one can simply multiply the CTMC coefficient standard errors by the multipliers, but if the entire covariance matrix is desired matrix multiplication is necessary. Variance of the fitted UD can be estimated via a simple Monte Carlo approach of drawing iterations, $\bb^{(r)} \sim N(\hat{\bb}, \hat{\mathbf{S}})$ then calculating $\bu^{(r)}$. After several draws $Var(\hat{\bu})$ can be estimated as the sample variance of the $\bu^{(r)}$.
 
 \subsubsection{Population-level inference}
 
@@ -262,7 +263,7 @@ In addition to the oceanographic variables, we used distance from land (m) to mo
 Notationally, the CTMC movement rate model we used to model the movement of each individual $l=1,\dots,5$ was
 \[
 \log \lambda_{ij} = \underbrace{\text{(Intercept)} +\text{DEPTH}_i + \text{SST}_i + \text{SST}^2_i + \text{SLA}_i + \text{SLA}^2_i}_{\bx_1 \text{ portion}} + 
-\underbrace{[\text{DIST}_j - \text{DIST}_i]}_{\bx_3 \text{ portion}}
+\underbrace{\frac{1}{2}[\text{DIST}_j - \text{DIST}_i]}_{\bx_3 \text{ portion}}
 \]
 In this model differences of the distance from land variable were used as a movement kernel between cells $i$ and $j$. This allowed individuals to prefer movement towards (or away from) land at the same rate no matter how far away they are. In addition SST, SLA, and DIST were $Z$-transformed for numerical stability of the HMM likelihood. The DEPTH residual was already on a nearly standard normal scale and DIST was only used as a difference, so values were not large enough to cause numerical issues. 
 
